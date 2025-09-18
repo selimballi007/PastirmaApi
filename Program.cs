@@ -12,6 +12,7 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseNpgsql(connectionString));
 
 // Add services to the container.
+//selim
 
 builder.Services.AddControllers();
 
