@@ -1,0 +1,49 @@
+﻿# Build results
+bin/
+obj/
+out/
+
+# Visual Studio files
+.vs/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# Rider files
+.idea/
+
+# Visual Studio Code
+.vscode/
+
+# NuGet
+*.nupkg
+packages/
+*.snupkg
+
+# ASP.NET temporary files
+*.dbmdl
+*.pdb
+*.cache
+*.log
+
+# OS generated files
+Thumbs.db
+.DS_Store
+desktop.ini
+
+# JetBrains Rider
+.idea/
+
+# Dotnet tool files
+*.dotsettings.user
+
+# Environment variables
+.env
+*.env
+.env.local
+.env.development
+.env.production
+
+# User secrets
+**/secrets.json
