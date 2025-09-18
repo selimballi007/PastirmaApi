@@ -1,6 +1,15 @@
-@PastirmaApi_HostAddress = http://localhost:5296
+@PastirmaApi_HostAddress = http://localhost:5296/api
 
 GET {{PastirmaApi_HostAddress}}/weatherforecast/
 Accept: application/json
 
 ###
+
+POST {{PastirmaApi_HostAddress}}/user/create/
+Content-Type: application/json
+{  
+  "Email": "selim@selim",
+  "PasswordHash":"123",
+  "Role":0
+}
+
