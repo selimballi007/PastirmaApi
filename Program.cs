@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using PastirmaApi.Data;
+using PastirmaApi.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -11,7 +12,8 @@ if (string.IsNullOrEmpty(connectionString))
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseNpgsql(connectionString));
 
-// Add services to the container.
+builder.Services.AddScoped<UserService>();
+
 
 builder.Services.AddControllers();
 
