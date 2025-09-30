@@ -8,7 +8,7 @@ Accept: application/json
 POST {{PastirmaApi_HostAddress}}/user/create/
 Content-Type: application/json
 {  
-  "Email": "selim@selim",
+  "Email": "mahmut",
   "PasswordHash":"123",
   "Role":0
 }

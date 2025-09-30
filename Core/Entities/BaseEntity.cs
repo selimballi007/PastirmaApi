@@ -1,4 +1,4 @@
-﻿namespace PastirmaApi.Models
+﻿namespace PastirmaApi.Core.Entities
 {
     public class BaseEntity
     {

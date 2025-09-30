@@ -1,7 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using PastirmaApi.Models;
+using PastirmaApi.Core.Entities;
 
-namespace PastirmaApi.Data
+namespace PastirmaApi.Infrastructure.Data
 {
     public class ApplicationDbContext : DbContext
     {
@@ -25,16 +25,11 @@ namespace PastirmaApi.Data
 
             foreach (var entry in entries)
             {
-                if (entry.State == EntityState.Added)
-                {
+                if (entry.State == EntityState.Added)                
                     entry.Entity.CreatedDate = DateTime.UtcNow;
-                    entry.Entity.IsActive = true;
-                }
-                else if (entry.State == EntityState.Modified)
-                {
+                
+                else if (entry.State == EntityState.Modified)                
                     entry.Entity.UpdatedDate = DateTime.UtcNow;
-                }
-
             }
         }
 
@@ -58,6 +53,7 @@ namespace PastirmaApi.Data
             {
                 entity.HasKey(e => e.Id);
                 entity.Property(e => e.Email).IsRequired().HasMaxLength(255);
+                entity.HasIndex(e => e.Email).IsUnique();
                 entity.Property(e => e.PasswordHash).IsRequired();
                 entity.Property(e => e.Role).IsRequired();
                 entity.HasQueryFilter(e => e.IsActive);
