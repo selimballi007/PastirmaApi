@@ -1,8 +1,6 @@
 ﻿using Microsoft.IdentityModel.Tokens;
 using PastirmaApi.Application.Interfaces.Services;
 using PastirmaApi.Core.Entities;
-using PastirmaApi.Core.Exceptions;
-using PastirmaApi.Infrastructure.Email;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;
@@ -77,7 +75,7 @@ namespace PastirmaApi.Infrastructure.Identity
                 ValidIssuer = _config["Jwt:Issuer"],
                 ValidateAudience = true,
                 ValidAudience = _config["Jwt:Audience"],
-                ValidateLifetime = true, // token süresi kontrol edilsin
+                ValidateLifetime = true, // Check the token duration
                 ClockSkew = TimeSpan.Zero
             };
 
@@ -87,16 +85,6 @@ namespace PastirmaApi.Infrastructure.Identity
                 var email = principal.FindFirst("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress")?.Value;
                 return email;
             }
-            catch (SecurityTokenExpiredException ex)
-            {
-                _logger.LogWarning(ex, "Email verification token expired");
-                throw new BusinessException("Email linki geçerlilik süresi dolmuş.");
-            }
-            catch (SecurityTokenException ex) // All token problems go in here
-            {
-                _logger.LogWarning(ex, "Invalid email verification token");
-                return null;
-            }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Unexpected error while validating email verification token");
@@ -105,6 +93,59 @@ namespace PastirmaApi.Infrastructure.Identity
         }
 
         public string GenerateRefreshToken() => Convert.ToBase64String(RandomNumberGenerator.GetBytes(64));
+
+        public string GeneratePasswordResetToken(string email)
+        {
+            var claims = new[]
+            {
+            new Claim(JwtRegisteredClaimNames.Email, email),
+            new Claim("type", "password_reset")
+            };
+
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["Jwt:Key"]!));
+            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+
+            var token = new JwtSecurityToken(
+                issuer: _config["Jwt:Issuer"],
+                audience: _config["Jwt:Audience"],
+                claims: claims,
+                expires: DateTime.UtcNow.AddMinutes(double.Parse(_config["Jwt:PasswordResetTokenExpiresMinutes"]!)),
+                signingCredentials: creds
+            );
+
+            return new JwtSecurityTokenHandler().WriteToken(token);
+        }
+
+        public string? ValidatePasswordResetToken(string token)
+        {
+            var tokenHandler = new JwtSecurityTokenHandler();
+            var key = Encoding.UTF8.GetBytes(_config["Jwt:Key"]!);
+
+            var validationParameters = new TokenValidationParameters
+            {
+                ValidateIssuerSigningKey = true,
+                IssuerSigningKey = new SymmetricSecurityKey(key),
+                ValidateIssuer = true,
+                ValidIssuer = _config["Jwt:Issuer"],
+                ValidateAudience = true,
+                ValidAudience = _config["Jwt:Audience"],
+                ValidateLifetime = true,
+                ClockSkew = TimeSpan.Zero
+            };
+
+            try
+            {
+                var principal = tokenHandler.ValidateToken(token, validationParameters, out _);
+                var email = principal.FindFirst(ClaimTypes.Email)?.Value
+                            ?? principal.FindFirst(JwtRegisteredClaimNames.Email)?.Value;
+                return email;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Unexpected error while validating verification token");
+                return null;
+            }
+        }
 
         public ClaimsPrincipal? GetPrincipalFromExpiredToken(string token)
         {
@@ -135,8 +176,7 @@ namespace PastirmaApi.Infrastructure.Identity
             {
                 _logger.LogWarning(ex, "Failed to validate expired token");
                 return null;
-            }
-            
+            }            
         }
     }    
 }

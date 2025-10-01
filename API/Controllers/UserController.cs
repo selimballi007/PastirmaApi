@@ -50,5 +50,19 @@ namespace PastirmaApi.API.Controllers
             return Ok(new { message = "Yeni doğrulama e-postası gönderildi." });
         }
 
+        [HttpPost("forgot-password")]
+        public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordDTO dto)
+        {
+            await _userService.ForgotPasswordAsync(dto.Email);
+            return Ok(new { message = "Eğer kayıtlı bir hesabınız varsa, şifre sıfırlama linki gönderildi." });
+        }
+
+        [HttpPost("reset-password")]
+        public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordDTO dto)
+        {
+            await _userService.ResetPasswordAsync(dto);
+            return Ok(new { message = "Şifreniz başarıyla güncellendi." });
+        }
+
     }
 }

@@ -10,6 +10,9 @@ namespace PastirmaApi.Application.Interfaces.Services
         string GenerateEmailVerificationToken(string email);
         string ValidateEmailVerificationToken(string token);
         ClaimsPrincipal? GetPrincipalFromExpiredToken(string token);
-        
+        string GeneratePasswordResetToken(string email);
+        string? ValidatePasswordResetToken(string token);
+
+
     }
 }

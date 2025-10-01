@@ -4,6 +4,7 @@ using PastirmaApi.Application.Interfaces.Repositories;
 using PastirmaApi.Application.Interfaces.Services;
 using PastirmaApi.Core.Entities;
 using PastirmaApi.Core.Exceptions;
+using PastirmaApi.Infrastructure.Data.Repositories;
 using PastirmaApi.Infrastructure.Email;
 using Resend;
 using System.Security.Claims;
@@ -44,7 +45,7 @@ namespace PastirmaApi.Application.Services
 
             // Create Email verification token
             var token = _jwtService.GenerateEmailVerificationToken(user.Email);
-            var verifyLink = $"{_configuration["FrontendUrl"]}/verify-email?token={token}";
+            var verifyLink = $"{_configuration["FrontendUrl"]}/account/verify-email?token={token}";
 
             try
             {
@@ -105,7 +106,7 @@ namespace PastirmaApi.Application.Services
                 throw new BusinessException("Kullanıcı zaten doğrulanmış");
             
             var newToken = _jwtService.GenerateEmailVerificationToken(user.Email);
-            var verifyLink = $"{_configuration["FrontendUrl"]}/verify-email?token={newToken}";
+            var verifyLink = $"{_configuration["FrontendUrl"]}/account/verify-email?token={newToken}";
             
             await _emailService.SendEmailAsync(
                 user.Email,
@@ -139,6 +140,44 @@ namespace PastirmaApi.Application.Services
             var accessToken = _jwtService.GenerateAccessToken(user);
 
             return new LoginResponseDTO(accessToken, refreshToken);
+        }
+
+        public async Task ForgotPasswordAsync(string email)
+        {
+            var user = await _repository.GetByEmailAsync(email);
+            if (user == null)
+            {
+                // Email yoksa bile, bilgi sızdırmamak için sessizce çık
+                return;
+            }
+
+            var token = _jwtService.GeneratePasswordResetToken(email);
+            var resetLink = $"{_configuration["FrontendUrl"]}/account/reset-password?token={token}";
+
+            await _emailService.SendEmailAsync(
+                user.Email,
+                EmailTemplateType.PasswordReset,
+                new Dictionary<string, string> {
+                    { "ResetLink", resetLink },
+                    { "Username", user.Username},
+                    { "PasswordResetTokenExpiresMinutes", _configuration["Jwt:PasswordResetTokenExpiresMinutes"]}
+                }
+            );
+        }
+
+        public async Task ResetPasswordAsync(ResetPasswordDTO dto)
+        {
+            var email = _jwtService.ValidatePasswordResetToken(dto.Token);
+            if (email == null)            
+                throw new BusinessException("Link geçersiz veya süresi dolmuş");
+            
+
+            var user = await _repository.GetByEmailAsync(email);
+            if (user == null) 
+                throw new BusinessException("Kullanıcı bulunamadı");
+
+            user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.NewPassword);
+            await _repository.UpdateAsync(user);
         }
 
         public async Task<bool> UserExistsAsync(string email)

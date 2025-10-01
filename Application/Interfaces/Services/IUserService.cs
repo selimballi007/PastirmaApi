@@ -10,5 +10,7 @@ namespace PastirmaApi.Application.Interfaces.Services
         Task VerifyEmailAsync(string token);
         Task ResendVerificationByTokenAsync(string token);
         Task ResendVerificationByEmailAsync(string email);
+        Task ForgotPasswordAsync(string email);
+        Task ResetPasswordAsync(ResetPasswordDTO dto);
     }
 }
