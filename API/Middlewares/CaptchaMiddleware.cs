@@ -17,8 +17,12 @@
         {
             // Sadece belirli endpoint’lerde çalıştır
             if (context.Request.Path.StartsWithSegments("/api/user/login") ||
+                context.Request.Path.StartsWithSegments("/api/user/register") ||
                 context.Request.Path.StartsWithSegments("/api/user/verify-email") ||
-                context.Request.Path.StartsWithSegments("/api/user/resend-verification"))
+                context.Request.Path.StartsWithSegments("/api/user/reset-password") ||
+                context.Request.Path.StartsWithSegments("/api/user/forgot-password") ||
+                context.Request.Path.StartsWithSegments("/api/user/resend-verification-byt") ||
+                context.Request.Path.StartsWithSegments("/api/user/resend-verification-bye"))
             {
                 try
                 {

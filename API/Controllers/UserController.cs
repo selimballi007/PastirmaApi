@@ -36,26 +36,26 @@ namespace PastirmaApi.API.Controllers
             //Return access token with JSON response (frontend stores)
             return Ok(new { 
                 accessToken = result.accessToken,
-                user= new LoginResponseDTO(result.id, result.userName, result.email, result.role )
+                user= new LoginResponseDTO(result.id, result.userName, result.email, result.role, result.lastLoginAt )
             });
         }
 
         [HttpPost("verify-email")]
-        public async Task<IActionResult> VerifyEmail([FromBody] ResendVerificationDTO dto)
+        public async Task<IActionResult> VerifyEmail([FromBody] VerifyEmailDTO dto)
         {
             await _userService.VerifyEmailAsync(dto.Token);
             return Ok(new { message = "Email başarıyla doğrulandı. Artık giriş yapabilirsiniz." });            
         }
 
         [HttpPost("resend-verification-byt")]
-        public async Task<IActionResult> ResendVerificationByToken([FromBody] ResendVerificationDTO dto)
+        public async Task<IActionResult> ResendVerificationByToken([FromBody] ResendVerificationByTokenDTO dto)
         {
             await _userService.ResendVerificationByTokenAsync(dto.Token);
             return Ok(new { message = "Yeni doğrulama e-postası gönderildi." });
         }
 
         [HttpPost("resend-verification-bye")]
-        public async Task<IActionResult> ResendVerificationByEmail([FromBody] ResendVerificationDTO dto)
+        public async Task<IActionResult> ResendVerificationByEmail([FromBody] ResendVerificationByEmailDTO dto)
         {
             await _userService.ResendVerificationByEmailAsync(dto.Email);
             return Ok(new { message = "Yeni doğrulama e-postası gönderildi." });
@@ -96,7 +96,7 @@ namespace PastirmaApi.API.Controllers
             return Ok(new
             {
                 accessToken = result.accessToken,
-                user = new LoginResponseDTO(result.id, result.userName, result.email, result.role)
+                user = new LoginResponseDTO(result.id, result.userName, result.email, result.role, result.lastLoginAt)
             });
         }
 

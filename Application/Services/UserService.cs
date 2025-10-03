@@ -126,11 +126,11 @@ namespace PastirmaApi.Application.Services
             if (user == null)
                 throw new BusinessException("Kullanıcı bulunamadı");
 
-            if (!BCrypt.Net.BCrypt.Verify(dto.PasswordHash, user.PasswordHash))
-                throw new BusinessException("Şifre yanlış");
-
             if (!user.IsVerified) //We gave HttpStatusCode 504 due to Email Service error. Frontend will act accordingly
-                throw new BusinessException("Email hesabı aktif edilmemiş.",StatusCodes.Status504GatewayTimeout);
+                throw new BusinessException("Email hesabı aktif edilmemiş.", StatusCodes.Status504GatewayTimeout);
+
+            if (!BCrypt.Net.BCrypt.Verify(dto.PasswordHash, user.PasswordHash))
+                throw new BusinessException("Şifre yanlış");            
 
             user.LastLoginAt = DateTime.UtcNow;
             var refreshToken = _jwtService.GenerateRefreshToken();
@@ -140,7 +140,7 @@ namespace PastirmaApi.Application.Services
 
             var accessToken = _jwtService.GenerateAccessToken(user);
 
-            return new LoginTransDTO( user.Id, user.Username, user.Email, user.Role.ToString(), accessToken, refreshToken, user.RefreshTokenExpiry);
+            return new LoginTransDTO( user.Id, user.Username, user.Email, user.Role.ToString(), accessToken, refreshToken, user.RefreshTokenExpiry, user.LastLoginAt);
         }
 
         public async Task ForgotPasswordAsync(string email)
@@ -202,7 +202,7 @@ namespace PastirmaApi.Application.Services
             user.RefreshTokenExpiry = DateTime.UtcNow.AddDays(int.Parse(_configuration["Jwt:RefreshTokenExpiresDays"]!));
             await _repository.UpdateAsync(user);
 
-            return new LoginTransDTO(user.Id, user.Username, user.Email, user.Role.ToString(), newAccessToken, newRefreshToken, user.RefreshTokenExpiry);
+            return new LoginTransDTO(user.Id, user.Username, user.Email, user.Role.ToString(), newAccessToken, newRefreshToken, user.RefreshTokenExpiry,user.LastLoginAt);
         }
 
         public async Task<bool> UserExistsAsync(string email)
