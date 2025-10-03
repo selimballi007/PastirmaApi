@@ -25,6 +25,8 @@ namespace PastirmaApi.Infrastructure.Identity
             var claims = new[]
             {
                 new Claim(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
+                new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()), // extra added
+                new Claim(ClaimTypes.Name, user.Username!),
                 new Claim(JwtRegisteredClaimNames.Email, user.Email),
                 new Claim("role", user.Role.ToString())
             };
@@ -33,7 +35,7 @@ namespace PastirmaApi.Infrastructure.Identity
                 issuer: _config["Jwt:Issuer"],
                 audience: _config["Jwt:Audience"],
                 claims: claims,
-                expires: DateTime.UtcNow.AddHours(double.Parse(_config["Jwt:AccessTokenExpiresHours"])),
+                expires: DateTime.UtcNow.AddMinutes(double.Parse(_config["Jwt:AccessTokenExpiresMinutes"]!)),
                 signingCredentials: creds
             );
 
@@ -55,7 +57,7 @@ namespace PastirmaApi.Infrastructure.Identity
                 issuer: _config["Jwt:Issuer"],
                 audience: _config["Jwt:Audience"],
                 claims: claims,
-                expires: DateTime.UtcNow.AddHours(double.Parse(_config["Jwt:AccessTokenExpiresHours"]!)),
+                expires: DateTime.UtcNow.AddDays(double.Parse(_config["Jwt:EmailTokenExpiresDays"]!)),
                 signingCredentials: creds
             );
 
@@ -178,5 +180,6 @@ namespace PastirmaApi.Infrastructure.Identity
                 return null;
             }            
         }
+
     }    
 }

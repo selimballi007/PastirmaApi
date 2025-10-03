@@ -13,6 +13,7 @@ namespace PastirmaApi.Application.Interfaces.Repositories
 
         
         Task<User> GetByIdAsync(int id);
+        Task<User> GetByRefreshTokenAsync(string refreshToken);
         Task<bool> UsernameExistsAsync(string username);
     }
 }

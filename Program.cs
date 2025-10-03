@@ -87,7 +87,8 @@ builder.Services.AddCors(options =>
     {
         policy.WithOrigins(builder.Configuration["FrontendUrl"]) // Next.js portu
                 .AllowAnyHeader()
-                .AllowAnyMethod();
+                .AllowAnyMethod()
+                .AllowCredentials();
     });
 });
 

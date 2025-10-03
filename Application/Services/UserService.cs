@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Http.HttpResults;
+using Microsoft.EntityFrameworkCore;
 using PastirmaApi.Application.DTOs.UserDTOs;
 using PastirmaApi.Application.Interfaces.Repositories;
 using PastirmaApi.Application.Interfaces.Services;
@@ -55,7 +56,7 @@ namespace PastirmaApi.Application.Services
                     new Dictionary<string, string> {
                         { "VerifyLink", verifyLink },
                         { "Username", user.Username},
-                        { "AccessTokenExpiresHours", _configuration["Jwt:AccessTokenExpiresHours"]}
+                        { "EmailTokenExpiresDays", _configuration["Jwt:EmailTokenExpiresDays"]!}
                     }
                 );
             }
@@ -113,13 +114,13 @@ namespace PastirmaApi.Application.Services
                 EmailTemplateType.EmailVerification,
                 new Dictionary<string, string> {
                     { "VerifyLink", verifyLink },
-                    { "Username", user.Username},
-                    { "AccessTokenExpiresHours", _configuration["Jwt:AccessTokenExpiresHours"]}
+                    { "Username", user.Username!},
+                    { "EmailTokenExpiresDays", _configuration["Jwt:EmailTokenExpiresDays"]!}
                 }
             );
         }
 
-        public async Task<LoginResponseDTO> LoginUserAsync(LoginUserDTO dto)
+        public async Task<LoginTransDTO> LoginUserAsync(LoginUserDTO dto)
         {
             var user = await _repository.GetByEmailAsync(dto.Email);
             if (user == null)
@@ -139,7 +140,7 @@ namespace PastirmaApi.Application.Services
 
             var accessToken = _jwtService.GenerateAccessToken(user);
 
-            return new LoginResponseDTO(accessToken, refreshToken);
+            return new LoginTransDTO( user.Id, user.Username, user.Email, user.Role.ToString(), accessToken, refreshToken, user.RefreshTokenExpiry);
         }
 
         public async Task ForgotPasswordAsync(string email)
@@ -159,8 +160,8 @@ namespace PastirmaApi.Application.Services
                 EmailTemplateType.PasswordReset,
                 new Dictionary<string, string> {
                     { "ResetLink", resetLink },
-                    { "Username", user.Username},
-                    { "PasswordResetTokenExpiresMinutes", _configuration["Jwt:PasswordResetTokenExpiresMinutes"]}
+                    { "Username", user.Username!},
+                    { "PasswordResetTokenExpiresMinutes", _configuration["Jwt:PasswordResetTokenExpiresMinutes"]!}
                 }
             );
         }
@@ -180,9 +181,44 @@ namespace PastirmaApi.Application.Services
             await _repository.UpdateAsync(user);
         }
 
+        public async Task<LoginTransDTO> RefreshAccessTokenAsync(string refreshToken, string accessToken)
+        {
+            var principal = _jwtService.GetPrincipalFromExpiredToken(accessToken);
+            if (principal == null)
+                throw new AuthException("Tekrar Giriş yapınız");
+
+            var userId = principal.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if(string.IsNullOrEmpty(userId))
+                throw new AuthException("Tekrar Giriş yapınız");
+
+            var user = await _repository.GetByRefreshTokenAsync(refreshToken);
+            if (user == null)
+                throw new AuthException("Tekrar Giriş yapınız");
+
+            var newAccessToken = _jwtService.GenerateAccessToken(user);
+            var newRefreshToken = _jwtService.GenerateRefreshToken();
+
+            user.RefreshToken = newRefreshToken;
+            user.RefreshTokenExpiry = DateTime.UtcNow.AddDays(int.Parse(_configuration["Jwt:RefreshTokenExpiresDays"]!));
+            await _repository.UpdateAsync(user);
+
+            return new LoginTransDTO(user.Id, user.Username, user.Email, user.Role.ToString(), newAccessToken, newRefreshToken, user.RefreshTokenExpiry);
+        }
+
         public async Task<bool> UserExistsAsync(string email)
         {
             return await _repository.EmailExistsAsync(email);
-        } 
+        }
+
+        public async Task LogoutAsync(int userId)
+        {
+            var user = await _repository.GetByIdAsync(userId);
+            if (user == null) throw new BusinessException("Kullanıcı bulunamadı");
+
+            user.RefreshToken = null;
+            user.RefreshTokenExpiry = null;
+
+            await _repository.UpdateAsync(user);
+        }
     }
 }

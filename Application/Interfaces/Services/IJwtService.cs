@@ -12,7 +12,5 @@ namespace PastirmaApi.Application.Interfaces.Services
         ClaimsPrincipal? GetPrincipalFromExpiredToken(string token);
         string GeneratePasswordResetToken(string email);
         string? ValidatePasswordResetToken(string token);
-
-
     }
 }
