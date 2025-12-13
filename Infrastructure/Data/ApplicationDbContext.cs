@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using PastirmaApi.Core.Entities;
+using PastirmaApi.Infrastructure.Data.Extensions;
 
 namespace PastirmaApi.Infrastructure.Data
 {
@@ -7,6 +8,15 @@ namespace PastirmaApi.Infrastructure.Data
     {
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options) { }
         public DbSet<User> Users => Set<User>();
+        public DbSet<Order> Orders => Set<Order>();
+        public DbSet<OrderItem> OrderItems => Set<OrderItem>();
+        public DbSet<Product> Products => Set<Product>();
+        public DbSet<Notification> Notifications => Set<Notification>();
+        public DbSet<Review> Reviews => Set<Review>();        
+        public DbSet<Category> Categories => Set<Category>();
+        public DbSet<Favorite> Favorites => Set<Favorite>();
+        public DbSet<HeroSlide> HeroSlides => Set<HeroSlide>();
+        public DbSet<ProductImage> ProductImages => Set<ProductImage>();
         public override int SaveChanges()
         {
             UpdateTimeStamps();
@@ -37,17 +47,21 @@ namespace PastirmaApi.Infrastructure.Data
         {
             entity.IsActive = false;
             Entry(entity).State = EntityState.Modified;
+            SaveChanges();
         }
 
         public async Task SoftDeleteAsync<T>(T Entity) where T : BaseEntity
         {
             Entity.IsActive = false;
             Entry(Entity).State = EntityState.Modified;
+            await SaveChangesAsync();
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
+            // Global snake_case convention
+            ApplySnakeCaseNamingConvention(modelBuilder);
 
             modelBuilder.Entity<User>(entity =>
             {
@@ -58,6 +72,33 @@ namespace PastirmaApi.Infrastructure.Data
                 entity.Property(e => e.Role).IsRequired();
                 entity.HasQueryFilter(e => e.IsActive);
             });
+        }
+
+        private void ApplySnakeCaseNamingConvention(ModelBuilder modelBuilder)
+        {
+            foreach (var entity in modelBuilder.Model.GetEntityTypes())
+            {
+                // Table names
+                entity.SetTableName(entity.GetTableName()?.ToSnakeCase());
+
+                // Column names
+                foreach (var property in entity.GetProperties())
+                {
+                    property.SetColumnName(property.GetColumnName().ToSnakeCase());
+                }
+
+                // Keys
+                foreach (var key in entity.GetKeys())
+                {
+                    key.SetName(key.GetName()?.ToSnakeCase());
+                }
+
+                // Indexes
+                foreach (var index in entity.GetIndexes())
+                {
+                    index.SetDatabaseName(index.GetDatabaseName()?.ToSnakeCase());
+                }
+            }
         }
     }
 }

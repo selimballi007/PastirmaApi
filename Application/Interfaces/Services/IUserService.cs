@@ -5,7 +5,7 @@ namespace PastirmaApi.Application.Interfaces.Services
     public interface IUserService
     {
         Task RegisterUserAsync(RegisterUserDTO dto);
-        Task<LoginTransDTO> LoginUserAsync(LoginUserDTO dto);
+        Task<LoginTransDTO> LoginUserAsync(LoginRequestDTO dto);
         Task<bool> UserExistsAsync(string email);
         Task VerifyEmailAsync(string token);
         Task ResendVerificationByTokenAsync(string token);

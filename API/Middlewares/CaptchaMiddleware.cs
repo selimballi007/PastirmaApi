@@ -1,87 +1,153 @@
-﻿namespace PastirmaApi.API.Middlewares
+﻿using Microsoft.Extensions.Caching.Memory;
+using PastirmaApi.Infrastructure.GoogleCaptcha;
+using System.Text;
+using System.Text.Json;
+
+namespace PastirmaApi.API.Middlewares
 {
     public class CaptchaMiddleware
     {
         private readonly RequestDelegate _next;
-        private readonly IConfiguration _config;
+        private readonly ICaptchaService _captchaService;
+        private readonly IMemoryCache _cache;
         private readonly ILogger<CaptchaMiddleware> _logger;
 
-        public CaptchaMiddleware(RequestDelegate next, IConfiguration config, ILogger<CaptchaMiddleware> logger)
+        // ✅ HashSet ile O(1) lookup
+        private static readonly HashSet<string> ProtectedPaths = new(StringComparer.OrdinalIgnoreCase)
+    {
+        "/api/user/login",
+        "/api/user/register",
+        "/api/user/verify-email",
+        "/api/user/reset-password",
+        "/api/user/forgot-password",
+        "/api/user/resend-verification-byt",
+        "/api/user/resend-verification-bye"
+    };
+
+        public CaptchaMiddleware(
+            RequestDelegate next,
+            ICaptchaService captchaService,
+            IMemoryCache cache,
+            ILogger<CaptchaMiddleware> logger)
         {
             _next = next;
-            _config = config;
+            _captchaService = captchaService;
+            _cache = cache;
             _logger = logger;
         }
 
         public async Task InvokeAsync(HttpContext context)
         {
-            // Sadece belirli endpoint’lerde çalıştır
-            if (context.Request.Path.StartsWithSegments("/api/user/login") ||
-                context.Request.Path.StartsWithSegments("/api/user/register") ||
-                context.Request.Path.StartsWithSegments("/api/user/verify-email") ||
-                context.Request.Path.StartsWithSegments("/api/user/reset-password") ||
-                context.Request.Path.StartsWithSegments("/api/user/forgot-password") ||
-                context.Request.Path.StartsWithSegments("/api/user/resend-verification-byt") ||
-                context.Request.Path.StartsWithSegments("/api/user/resend-verification-bye"))
+            // ✅ OPTIONS (preflight) request'leri atla
+            if (context.Request.Method == "OPTIONS")
             {
-                try
-                {
-                    // Body'den al
-                    context.Request.EnableBuffering();
-                    using var reader = new StreamReader(context.Request.Body, leaveOpen: true);
-                    var body = await reader.ReadToEndAsync();
-                    context.Request.Body.Position = 0;
-
-                    if (!string.IsNullOrEmpty(body))
-                    {
-                        var json = System.Text.Json.JsonDocument.Parse(body);
-                        if (json.RootElement.TryGetProperty("captchaToken", out var captchaElement))
-                        {
-                            var captchaToken = captchaElement.GetString();
-
-                            if (string.IsNullOrEmpty(captchaToken))
-                            {
-                                context.Response.StatusCode = 400;
-                                await context.Response.WriteAsJsonAsync(new { message = "Captcha token yok" });
-                                return;
-                            }
-
-                            // Google’a doğrulat
-                            using var httpClient = new HttpClient();
-                            var secret = _config["Captcha:SecretKey"];
-                            var verifyUrl =
-                                $"https://www.google.com/recaptcha/api/siteverify?secret={secret}&response={captchaToken}";
-                            var res = await httpClient.PostAsync(verifyUrl, null);
-                            var captchaResult = await res.Content.ReadFromJsonAsync<CaptchaResponse>();
-
-                            if (captchaResult == null || !captchaResult.Success)
-                            {
-                                context.Response.StatusCode = 400;
-                                await context.Response.WriteAsJsonAsync(new { message = "Captcha doğrulaması başarısız" });
-                                return;
-                            }
-                        }
-                    }
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogError(ex, "Captcha doğrulama sırasında hata oluştu");
-                    context.Response.StatusCode = 500;
-                    await context.Response.WriteAsJsonAsync(new { message = "Captcha kontrolünde hata oluştu" });
-                    return;
-                }
+                await _next(context);
+                return;
             }
 
-            // Doğrulama başarılı → request devam etsin
+            // ✅ Early return: Korumasız endpoint'lerde 0ms overhead
+            if (!IsProtectedEndpoint(context.Request.Path))
+            {
+                await _next(context);
+                return;
+            }
+
+            // ✅ Model binding'den önce body'yi okuma (doğru yol)
+            context.Request.EnableBuffering();
+
+            string? captchaToken = null;
+
+            try
+            {
+                // ✅ Body'den captcha token çıkar
+                using var reader = new StreamReader(
+                    context.Request.Body,
+                    encoding: Encoding.UTF8,
+                    detectEncodingFromByteOrderMarks: false,
+                    bufferSize: 1024,
+                    leaveOpen: true
+                );
+
+                var body = await reader.ReadToEndAsync();
+                context.Request.Body.Position = 0; // Reset for controller
+
+                if (!string.IsNullOrEmpty(body))
+                {
+                    var json = JsonDocument.Parse(body);
+                    if (json.RootElement.TryGetProperty("captchaToken", out var element))
+                    {
+                        captchaToken = element.GetString();
+                    }
+                }
+            }
+            catch (JsonException ex)
+            {
+                _logger.LogWarning(ex, "Invalid JSON in request body");
+                context.Response.StatusCode = 400;
+                await context.Response.WriteAsJsonAsync(new { errors = new[] { "Geçersiz request formatı" } });
+                return;
+            }
+
+            // ✅ Token kontrolü
+            if (string.IsNullOrWhiteSpace(captchaToken))
+            {
+                context.Response.StatusCode = 400;
+                await context.Response.WriteAsJsonAsync(new { errors = new[] { "Captcha token gerekli" } });
+                return;
+            }
+
+            // ✅ CACHE CHECK (Çok önemli!)
+            var cacheKey = $"captcha:verified:{captchaToken}";
+
+            if (_cache.TryGetValue<bool>(cacheKey, out var isCached))
+            {
+                if (!isCached)
+                {
+                    // Cache'de var ve geçersiz
+                    context.Response.StatusCode = 400;
+                    await context.Response.WriteAsJsonAsync(new { errors = new[] { "Captcha doğrulaması başarısız" } });
+                    return;
+                }
+
+                // Cache'de var ve geçerli - direkt geç
+                await _next(context);
+                return;
+            }
+
+            // ✅ Google'a doğrulat (sadece cache miss'te)
+            var verificationResult = await _captchaService.VerifyAsync(captchaToken);
+
+            // ✅ Sonucu cache'e kaydet (1 dakika - token tekrar kullanılamaz)
+            _cache.Set(
+                cacheKey,
+                verificationResult.Success,
+                new MemoryCacheEntryOptions
+                {
+                    AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(1),
+                    Priority = CacheItemPriority.High,
+                    Size=1
+                }
+            );
+
+            if (!verificationResult.Success)
+            {
+                _logger.LogWarning(
+                    "Captcha verification failed. Errors: {Errors}",
+                    string.Join(", ", verificationResult.ErrorCodes ?? new List<string>())
+                );
+
+                context.Response.StatusCode = 400;
+                await context.Response.WriteAsJsonAsync(new { errors = new[] { "Captcha doğrulaması başarısız" } });
+                return;
+            }
+
             await _next(context);
         }
-    }
 
-    public class CaptchaResponse
-    {
-        public bool Success { get; set; }
-        public DateTime Challenge_ts { get; set; }
-        public string Hostname { get; set; }
-        public List<string> ErrorCodes { get; set; } = new();
+        private static bool IsProtectedEndpoint(PathString path)
+        {
+            // ✅ O(1) HashSet lookup - 7 string comparison yerine
+            return ProtectedPaths.Contains(path.Value ?? string.Empty);
+        }
     }
 }

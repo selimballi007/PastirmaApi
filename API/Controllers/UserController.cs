@@ -1,7 +1,9 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using PastirmaApi.Application.DTOs.UserDTOs;
 using PastirmaApi.Application.Interfaces.Services;
 using PastirmaApi.Core.Exceptions;
+using System.Diagnostics;
 using System.Security.Claims;
 
 namespace PastirmaApi.API.Controllers
@@ -11,12 +13,10 @@ namespace PastirmaApi.API.Controllers
     public class UserController:ControllerBase
     {
         private readonly IUserService _userService;
-        private readonly IWebHostEnvironment _env;
 
-        public UserController( IUserService userService, IWebHostEnvironment env)
+        public UserController( IUserService userService)
         {
             _userService = userService;
-            _env = env;
         }
 
         [HttpPost("register")]
@@ -27,13 +27,15 @@ namespace PastirmaApi.API.Controllers
         }
 
         [HttpPost("login")]
-        public async Task<IActionResult> Login([FromBody] LoginUserDTO dto)
+        public async Task<IActionResult> Login([FromBody] LoginRequestDTO dto)
         {
-            var result = await _userService.LoginUserAsync(dto);
-
+            var controllerStopWatch = Stopwatch.StartNew();
+            var result = await _userService.LoginUserAsync(dto);          
+            
             RefreshTokenCookieSettings(result.refreshTokenExpiry, result.refreshToken);
-
-            //Return access token with JSON response (frontend stores)
+            controllerStopWatch.Stop();
+            System.Diagnostics.Debug.WriteLine($"ControllerTime : {controllerStopWatch.ElapsedMilliseconds.ToString()}");
+            
             return Ok(new { 
                 accessToken = result.accessToken,
                 user= new LoginResponseDTO(result.id, result.userName, result.email, result.role, result.lastLoginAt )
@@ -78,9 +80,10 @@ namespace PastirmaApi.API.Controllers
         [HttpPost("refresh-token")]
         public async Task<IActionResult> RefreshToken()
         {
+            var controllerStopWatch = Stopwatch.StartNew();
             var refreshToken = Request.Cookies["refreshToken"]!;
             if(refreshToken == null)
-                throw new AuthException("Tekrar Giriş yapınız");
+                throw new AuthException("Tekrar Giriş yapınız");           
             var authHeader = Request.Headers["Authorization"].ToString();
             string? accessToken = null;
 
@@ -88,16 +91,19 @@ namespace PastirmaApi.API.Controllers
             {
                 accessToken = authHeader["Bearer ".Length..].Trim();
             }
+            if (accessToken == null)
+                throw new AuthException("Tekrar Giriş yapınız");
 
             var result = await _userService.RefreshAccessTokenAsync(refreshToken, accessToken);
 
             RefreshTokenCookieSettings(result.refreshTokenExpiry, result.refreshToken);
-
+            controllerStopWatch.Stop();
+            System.Diagnostics.Debug.WriteLine($"ControllerTime : {controllerStopWatch.ElapsedMilliseconds.ToString()}");
             return Ok(new
             {
                 accessToken = result.accessToken,
                 user = new LoginResponseDTO(result.id, result.userName, result.email, result.role, result.lastLoginAt)
-            });
+            });              
         }
 
         [HttpPost("logout")]
@@ -112,9 +118,32 @@ namespace PastirmaApi.API.Controllers
 
             return Ok();
         }
+
+        [HttpPost("test")]
+        [Authorize]
+        public async Task<IActionResult> TestAsync()
+        {
+            await Task.CompletedTask;
+            return Ok(new { message = "Test successful", timestamp = DateTime.UtcNow });
+        }
+
+        [HttpGet("test-cors")]
+        public IActionResult TestCors()
+        {
+            return Ok(new
+            {
+                message = "CORS working",
+                cookies = Request.Cookies.Keys,
+                refreshToken = Request.Cookies["refreshToken"] ?? "NOT FOUND"
+            });
+        }
         private void RefreshTokenCookieSettings(DateTime? refreshTokenExpiry, string refreshToken)
         {
-            
+            System.Diagnostics.Debug.WriteLine($"[RefreshTokenCookieSettings] Called");
+            System.Diagnostics.Debug.WriteLine($"[RefreshTokenCookieSettings] Cookie value: {refreshToken.Substring(0, 20)}...");
+
+            var env = HttpContext.RequestServices.GetRequiredService<IWebHostEnvironment>();
+
             // Put the refresh token in the cookie
             var cookieOptions = new CookieOptions
             {
@@ -122,10 +151,10 @@ namespace PastirmaApi.API.Controllers
                 Expires = refreshTokenExpiry,
                 Path = "/"                
             };
-            if (_env.IsDevelopment())
+            if (env.IsDevelopment())
             {
                 cookieOptions.Secure = false;
-                cookieOptions.SameSite= SameSiteMode.None;
+                cookieOptions.SameSite= SameSiteMode.Lax;
             }
             else
             {
@@ -134,6 +163,10 @@ namespace PastirmaApi.API.Controllers
             }
 
             Response.Cookies.Append("refreshToken", refreshToken, cookieOptions);
+
+            System.Diagnostics.Debug.WriteLine($"[RefreshTokenCookieSettings] Cookie appended");
+            System.Diagnostics.Debug.WriteLine($"[RefreshTokenCookieSettings] Response.Headers[\"Set-Cookie\"]: {Response.Headers["Set-Cookie"]}");
+
         }
 
     }

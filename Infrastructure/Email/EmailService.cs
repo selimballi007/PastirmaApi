@@ -28,7 +28,7 @@ namespace PastirmaApi.Infrastructure.Email
         {
             var message = new EmailMessage
             {
-                From = _config["Resend:EmailFrom"],
+                From = _config["Resend:EmailFrom"]!,
                 To = toEmail,
                 Subject = _templateProvider.GetSubject(templateType),
                 HtmlBody = _templateProvider.GetHtmlBody(templateType, values)

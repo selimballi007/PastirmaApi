@@ -1,6 +1,8 @@
 ﻿using Microsoft.IdentityModel.Tokens;
+using PastirmaApi.Application.DTOs.UserDTOs;
 using PastirmaApi.Application.Interfaces.Services;
 using PastirmaApi.Core.Entities;
+using PastirmaApi.Core.Exceptions;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;
@@ -17,18 +19,18 @@ namespace PastirmaApi.Infrastructure.Identity
             _logger = logger;
         }
 
-        public string GenerateAccessToken(User user)
+        public string GenerateAccessToken(GenerateAccessTokenDTO userDto)
         {
-            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["Jwt:Key"]));
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["Jwt:Key"]!));
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
             var claims = new[]
             {
-                new Claim(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
-                new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()), // extra added
-                new Claim(ClaimTypes.Name, user.Username!),
-                new Claim(JwtRegisteredClaimNames.Email, user.Email),
-                new Claim("role", user.Role.ToString())
+                new Claim(JwtRegisteredClaimNames.Sub, userDto.Id.ToString()),
+                new Claim(ClaimTypes.NameIdentifier, userDto.Id.ToString()), // extra added
+                new Claim(ClaimTypes.Name, userDto.Username!),
+                new Claim(JwtRegisteredClaimNames.Email, userDto.Email),
+                new Claim("role", userDto.Role.ToString())
             };
 
             var token = new JwtSecurityToken(
@@ -50,7 +52,7 @@ namespace PastirmaApi.Infrastructure.Identity
                 new Claim ("type","email_verify")
             };
 
-            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["Jwt:Key"]));
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["Jwt:Key"]!));
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
             var token = new JwtSecurityToken(
@@ -149,7 +151,7 @@ namespace PastirmaApi.Infrastructure.Identity
             }
         }
 
-        public ClaimsPrincipal? GetPrincipalFromExpiredToken(string token)
+        public ClaimsPrincipal? GetPrincipalFromExpiredToken(string? token)
         {
             var tokenValidationParameters = new TokenValidationParameters
             {
@@ -159,7 +161,7 @@ namespace PastirmaApi.Infrastructure.Identity
                 ValidateLifetime = false, // for expired token
                 ValidIssuer = _config["Jwt:Issuer"],
                 ValidAudience = _config["Jwt:Audience"],
-                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["Jwt:Key"]))
+                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["Jwt:Key"]!))
             };
 
             var tokenHandler = new JwtSecurityTokenHandler();
