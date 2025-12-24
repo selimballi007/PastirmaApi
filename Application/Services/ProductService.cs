@@ -70,7 +70,6 @@ namespace PastirmaApi.Application.Services
 
             return products.Select(MapToDto).ToList();
         }
-
         public async Task<ProductDTO?> GetProductByIdAsync(int id, bool includeImages=true)
         {
             var query = _context.Products
@@ -100,7 +99,6 @@ namespace PastirmaApi.Application.Services
 
             return MapToDto(product);
         }
-
         public async Task<ProductDTO?> UpdateProductAsync(int id, UpdateProductRequestDTO request)
         {
             var product = await _context.Products
@@ -123,7 +121,6 @@ namespace PastirmaApi.Application.Services
 
             return MapToDto(product);
         }
-
         public async Task<bool> DeleteProductAsync(int id)
         {
             var product = await _context.Products
@@ -139,7 +136,6 @@ namespace PastirmaApi.Application.Services
 
             return true;
         }
-
         public async Task<bool> UpdateProductStatusAsync(int id, bool isActive)
         {
             var product = await _context.Products
@@ -156,7 +152,6 @@ namespace PastirmaApi.Application.Services
 
             return true;
         }
-
         public async Task<bool> UpdateProductStockAsync(int id, int stock)
         {
             var product = await _context.Products
