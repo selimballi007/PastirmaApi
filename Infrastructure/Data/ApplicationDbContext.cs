@@ -17,6 +17,8 @@ namespace PastirmaApi.Infrastructure.Data
         public DbSet<Favorite> Favorites => Set<Favorite>();
         public DbSet<HeroSlide> HeroSlides => Set<HeroSlide>();
         public DbSet<ProductImage> ProductImages => Set<ProductImage>();
+        public DbSet<BlogPost> BlogPosts => Set<BlogPost>();
+        public DbSet<BlogCategory> BlogCategories => Set<BlogCategory>();
         public override int SaveChanges()
         {
             UpdateTimeStamps();
@@ -71,6 +73,25 @@ namespace PastirmaApi.Infrastructure.Data
                 entity.Property(e => e.PasswordHash).IsRequired();
                 entity.Property(e => e.Role).IsRequired();
                 entity.HasQueryFilter(e => e.IsActive);
+            });
+
+            modelBuilder.Entity<BlogPost>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.HasOne(e => e.Category)
+                    .WithMany(c => c.BlogPosts)
+                    .HasForeignKey(e => e.CategoryId)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                entity.HasOne(e => e.Author)
+                    .WithMany()
+                    .HasForeignKey(e => e.AuthorId)
+                    .OnDelete(DeleteBehavior.Restrict);
+            });
+
+            modelBuilder.Entity<BlogCategory>(entity =>
+            {
+                entity.HasKey(e => e.Id);
             });
         }
 

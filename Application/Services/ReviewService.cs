@@ -106,6 +106,22 @@ namespace PastirmaApi.Application.Services
             };
         }
 
+        public async Task<List<ReviewDTO>> GetApprovedReviewsAsync(int page, int pageSize)
+        {
+            var query = _context.Reviews
+                .Include(r => r.User)
+                .Include(r => r.Product)
+                .Where(r => r.Status == ReviewStatus.Approved)
+                .OrderByDescending(r => r.CreatedDate);
+
+            var reviews = await query
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            return reviews.Select(MapToDto).ToList();
+        }
+
         public async Task<PagedResult<ReviewDTO>> GetPendingReviewsAsync(int page, int pageSize)
         {
             var query = _context.Reviews

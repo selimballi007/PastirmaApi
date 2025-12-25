@@ -111,6 +111,27 @@ namespace PastirmaApi.API.Controllers
             }
         }
 
+        // GET: api/reviews?page=1&pageSize=10
+        [HttpGet]
+        public async Task<ActionResult<List<ReviewDTO>>> GetAllApprovedReviews(
+            [FromQuery] int page = 1,
+            [FromQuery] int pageSize = 10)
+        {
+            try
+            {
+                if (page < 1) page = 1;
+                if (pageSize < 1 || pageSize > 1000) pageSize = 10;
+
+                var result = await _reviewService.GetApprovedReviewsAsync(page, pageSize);
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error getting all approved reviews");
+                return StatusCode(500, new { message = "Onaylanmış yorumlar getirilirken bir hata oluştu." });
+            }
+        }
+
         // GET: api/reviews/pending?page=1&pageSize=10
         [HttpGet("pending")]
         [Authorize(Roles = "Admin")]

@@ -8,6 +8,7 @@ namespace PastirmaApi.Application.Interfaces.Services
         Task<ReviewDTO> CreateReviewAsync(int userId, CreateReviewDTO dto);
         Task<ReviewDTO> GetReviewByIdAsync(int id);
         Task<PagedResult<ReviewDTO>> GetProductReviewsAsync(int productId, int page, int pageSize);
+        Task<List<ReviewDTO>> GetApprovedReviewsAsync(int page, int pageSize);
         Task<PagedResult<ReviewDTO>> GetPendingReviewsAsync(int page, int pageSize);
         Task<bool> ApproveReviewAsync(int reviewId);
         Task<bool> RejectReviewAsync(int reviewId);
