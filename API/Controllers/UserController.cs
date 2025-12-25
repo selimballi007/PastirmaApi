@@ -30,14 +30,17 @@ namespace PastirmaApi.API.Controllers
         public async Task<IActionResult> Login([FromBody] LoginRequestDTO dto)
         {
             var controllerStopWatch = Stopwatch.StartNew();
-            var result = await _userService.LoginUserAsync(dto);          
-            
+            var result = await _userService.LoginUserAsync(dto);
+
+            // Set both access and refresh tokens as HttpOnly cookies
+            AccessTokenCookieSettings(result.accessToken);
             RefreshTokenCookieSettings(result.refreshTokenExpiry, result.refreshToken);
+
             controllerStopWatch.Stop();
             System.Diagnostics.Debug.WriteLine($"ControllerTime : {controllerStopWatch.ElapsedMilliseconds.ToString()}");
-            
-            return Ok(new { 
-                accessToken = result.accessToken,
+
+            return Ok(new {
+                accessToken = result.accessToken, // Still return for backward compatibility
                 user= new LoginResponseDTO(result.id, result.userName, result.email, result.role, result.lastLoginAt )
             });
         }
@@ -96,12 +99,15 @@ namespace PastirmaApi.API.Controllers
 
             var result = await _userService.RefreshAccessTokenAsync(refreshToken, accessToken);
 
+            // Set both access and refresh tokens as HttpOnly cookies
+            AccessTokenCookieSettings(result.accessToken);
             RefreshTokenCookieSettings(result.refreshTokenExpiry, result.refreshToken);
+
             controllerStopWatch.Stop();
             System.Diagnostics.Debug.WriteLine($"ControllerTime : {controllerStopWatch.ElapsedMilliseconds.ToString()}");
             return Ok(new
             {
-                accessToken = result.accessToken,
+                accessToken = result.accessToken, // Still return for backward compatibility
                 user = new LoginResponseDTO(result.id, result.userName, result.email, result.role, result.lastLoginAt)
             });              
         }
@@ -114,6 +120,8 @@ namespace PastirmaApi.API.Controllers
                 return Unauthorized();
             await _userService.LogoutAsync(int.Parse(userId));
 
+            // Clear both access and refresh token cookies
+            Response.Cookies.Delete("accessToken");
             Response.Cookies.Delete("refreshToken");
 
             return Ok();
@@ -137,6 +145,35 @@ namespace PastirmaApi.API.Controllers
                 refreshToken = Request.Cookies["refreshToken"] ?? "NOT FOUND"
             });
         }
+        private void AccessTokenCookieSettings(string accessToken)
+        {
+            System.Diagnostics.Debug.WriteLine($"[AccessTokenCookieSettings] Called");
+
+            var env = HttpContext.RequestServices.GetRequiredService<IWebHostEnvironment>();
+
+            // Put the access token in the cookie (15 minutes expiry)
+            var cookieOptions = new CookieOptions
+            {
+                HttpOnly = true, // JS inaccessible → secure
+                Expires = DateTimeOffset.UtcNow.AddMinutes(15), // Match JWT expiry
+                Path = "/"
+            };
+            if (env.IsDevelopment())
+            {
+                cookieOptions.Secure = false;
+                cookieOptions.SameSite = SameSiteMode.Lax;
+            }
+            else
+            {
+                cookieOptions.Secure = true; // Only works on HTTPS
+                cookieOptions.SameSite = SameSiteMode.Strict; // Protects against CSRF
+            }
+
+            Response.Cookies.Append("accessToken", accessToken, cookieOptions);
+
+            System.Diagnostics.Debug.WriteLine($"[AccessTokenCookieSettings] Cookie appended");
+        }
+
         private void RefreshTokenCookieSettings(DateTime? refreshTokenExpiry, string refreshToken)
         {
             System.Diagnostics.Debug.WriteLine($"[RefreshTokenCookieSettings] Called");
@@ -149,7 +186,7 @@ namespace PastirmaApi.API.Controllers
             {
                 HttpOnly = true, //JS inaccessible → secure
                 Expires = refreshTokenExpiry,
-                Path = "/"                
+                Path = "/"
             };
             if (env.IsDevelopment())
             {

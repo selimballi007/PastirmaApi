@@ -8,7 +8,8 @@ namespace PastirmaApi.API.Extensions
         public static IServiceCollection AddCaptchaServices(this IServiceCollection services)
         {
             // ✅ HttpClient factory ile - connection pooling otomatik
-            services.AddHttpClient<ICaptchaService, GoogleRecaptchaService>()
+            // ✅ Cloudflare Turnstile kullanımı (Google reCAPTCHA yerine)
+            services.AddHttpClient<ICaptchaService, CloudflareTurnstileService>()
                 .SetHandlerLifetime(TimeSpan.FromMinutes(5)); // Connection pool lifetime
 
             // ✅ Memory cache
@@ -30,6 +31,9 @@ namespace PastirmaApi.API.Extensions
 
             // 2. Captcha middleware
             app.UseMiddleware<CaptchaMiddleware>();
+
+            // 3. Cookie to Header middleware (BEFORE UseAuthentication())
+            app.UseMiddleware<CookieToHeaderMiddleware>();
 
             return app;
         }
