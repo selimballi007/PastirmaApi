@@ -57,6 +57,7 @@ builder.Services.AddScoped<ICategoryService, CategoryService>();
 builder.Services.AddScoped<IFavoriteService, FavoriteService>();
 builder.Services.AddScoped<IBlogPostService, BlogPostService>();
 builder.Services.AddScoped<IBlogCategoryService, BlogCategoryService>();
+builder.Services.AddScoped<IHeroSlideService, HeroSlideService>();
 builder.Services.AddScoped<ICloudinaryService, CloudinaryService>();
 
 builder.Services.AddCaptchaServices();
@@ -122,7 +123,7 @@ using (var scope = app.Services.CreateScope())
     db.Database.Migrate(); // eksik migration varsa uygular
 
     // Seed database with sample data
-     var seeder = new DatabaseSeeder(db);
+    var seeder = new DatabaseSeeder(db);
     await seeder.SeedAsync();
 }
 // ------------------------------------

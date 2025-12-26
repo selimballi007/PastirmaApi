@@ -14,6 +14,7 @@ namespace PastirmaApi.Application.Interfaces.Services
         Task<bool> RejectReviewAsync(int reviewId);
         Task<bool> DeleteReviewAsync(int reviewId, int userId);
         Task<ProductReviewStats> GetProductReviewStatsAsync(int productId);
+        Task<ReviewStats> GetReviewStatsAsync();
         Task<bool> CanUserReviewProductAsync(int userId, int productId);
     }
 }

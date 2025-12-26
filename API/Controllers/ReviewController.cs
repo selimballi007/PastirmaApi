@@ -111,6 +111,23 @@ namespace PastirmaApi.API.Controllers
             }
         }
 
+        // GET: api/reviews/stats
+        [HttpGet("stats")]
+        [Authorize(Roles = "Admin")]
+        public async Task<ActionResult> GetReviewStats()
+        {
+            try
+            {
+                var stats = await _reviewService.GetReviewStatsAsync();
+                return Ok(stats);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error getting review stats");
+                return StatusCode(500, new { message = "İstatistikler getirilirken bir hata oluştu." });
+            }
+        }
+
         // GET: api/reviews?page=1&pageSize=10
         [HttpGet]
         public async Task<ActionResult<List<ReviewDTO>>> GetAllApprovedReviews(

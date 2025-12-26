@@ -12,12 +12,12 @@ namespace PastirmaApi.API.Controllers
     [ApiController]
     [Route("api/[controller]")]
     [Authorize]
-    public class FavoritesController : ControllerBase
+    public class FavoriteController : ControllerBase
     {
         private readonly IFavoriteService _favoriteService;
-        private readonly ILogger<FavoritesController> _logger;
+        private readonly ILogger<FavoriteController> _logger;
 
-        public FavoritesController(IFavoriteService favoriteService, ILogger<FavoritesController> logger)
+        public FavoriteController(IFavoriteService favoriteService, ILogger<FavoriteController> logger)
         {
             _favoriteService = favoriteService;
             _logger = logger;

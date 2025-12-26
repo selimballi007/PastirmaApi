@@ -258,6 +258,29 @@ namespace PastirmaApi.Application.Services
             };
         }
 
+        /// <summary>
+        /// Get global review statistics for dashboard
+        /// Returns counts of reviews by status (Pending, Approved, Rejected)
+        /// </summary>
+        public async Task<ReviewStats> GetReviewStatsAsync()
+        {
+            var pendingCount = await _context.Reviews
+                .CountAsync(r => r.Status == ReviewStatus.Pending);
+
+            var approvedCount = await _context.Reviews
+                .CountAsync(r => r.Status == ReviewStatus.Approved);
+
+            var rejectedCount = await _context.Reviews
+                .CountAsync(r => r.Status == ReviewStatus.Rejected);
+
+            return new ReviewStats
+            {
+                Pending = pendingCount,
+                Approved = approvedCount,
+                Rejected = rejectedCount
+            };
+        }
+
         public async Task<bool> CanUserReviewProductAsync(int userId, int productId)
         {
             // ✅ Ürünü satın almış mı?

@@ -84,40 +84,62 @@ namespace PastirmaApi.API.Controllers
         public async Task<IActionResult> RefreshToken()
         {
             var controllerStopWatch = Stopwatch.StartNew();
-            var refreshToken = Request.Cookies["refreshToken"]!;
-            if(refreshToken == null)
-                throw new AuthException("Tekrar Giriş yapınız");           
-            var authHeader = Request.Headers["Authorization"].ToString();
-            string? accessToken = null;
 
-            if (!string.IsNullOrEmpty(authHeader) && authHeader.StartsWith("Bearer "))
+            // ✅ DEBUG: Log all incoming cookies
+            Console.WriteLine("=== REFRESH TOKEN REQUEST ===");
+            Console.WriteLine($"[RefreshToken] Request received at {DateTime.UtcNow}");
+            Console.WriteLine($"[RefreshToken] All cookies count: {Request.Cookies.Count}");
+            foreach (var cookie in Request.Cookies)
             {
-                accessToken = authHeader["Bearer ".Length..].Trim();
+                var value = cookie.Value.Length > 50 ? cookie.Value.Substring(0, 50) + "..." : cookie.Value;
+                Console.WriteLine($"[RefreshToken] Cookie: {cookie.Key} = {value}");
             }
-            if (accessToken == null)
-                throw new AuthException("Tekrar Giriş yapınız");
 
+            // ✅ Read both tokens from cookies (cookie-based auth)
+            var refreshToken = Request.Cookies["refreshToken"];
+            Console.WriteLine($"[RefreshToken] refreshToken from cookies: {(string.IsNullOrEmpty(refreshToken) ? "NULL/EMPTY" : "Found (" + refreshToken.Substring(0, Math.Min(20, refreshToken.Length)) + "...)")}");
+
+            if (string.IsNullOrEmpty(refreshToken))
+            {
+                Console.WriteLine("[RefreshToken] ERROR: refreshToken is null or empty!");
+                throw new AuthException("Tekrar Giriş yapınız");
+            }
+
+            var accessToken = Request.Cookies["accessToken"];
+            Console.WriteLine($"[RefreshToken] accessToken from cookies: {(string.IsNullOrEmpty(accessToken) ? "NULL/EMPTY" : "Found (" + accessToken.Substring(0, Math.Min(20, accessToken.Length)) + "...)")}");
+
+            if (string.IsNullOrEmpty(accessToken))
+            {
+                Console.WriteLine("[RefreshToken] ERROR: accessToken is null or empty!");
+                throw new AuthException("Tekrar Giriş yapınız");
+            }
+
+            Console.WriteLine("[RefreshToken] Calling RefreshAccessTokenAsync...");
             var result = await _userService.RefreshAccessTokenAsync(refreshToken, accessToken);
+            Console.WriteLine($"[RefreshToken] Service call successful. User ID: {result.id}");
 
             // Set both access and refresh tokens as HttpOnly cookies
             AccessTokenCookieSettings(result.accessToken);
             RefreshTokenCookieSettings(result.refreshTokenExpiry, result.refreshToken);
 
             controllerStopWatch.Stop();
+            Console.WriteLine($"[RefreshToken] SUCCESS - Total time: {controllerStopWatch.ElapsedMilliseconds}ms");
             System.Diagnostics.Debug.WriteLine($"ControllerTime : {controllerStopWatch.ElapsedMilliseconds.ToString()}");
             return Ok(new
             {
-                accessToken = result.accessToken, // Still return for backward compatibility
                 user = new LoginResponseDTO(result.id, result.userName, result.email, result.role, result.lastLoginAt)
             });              
         }
 
         [HttpPost("logout")]
+        [Authorize] // ✅ Require authentication - only logged in users can logout
         public async Task<IActionResult> LogoutUserAsync()
         {
             var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (string.IsNullOrEmpty(userId))
                 return Unauthorized();
+
+            // ✅ Clear RefreshToken from User table in database
             await _userService.LogoutAsync(int.Parse(userId));
 
             // Clear both access and refresh token cookies

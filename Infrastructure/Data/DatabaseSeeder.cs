@@ -81,8 +81,8 @@ namespace PastirmaApi.Infrastructure.Data
                     Price = 899.90m,
                     OldPrice = 1099.90m,
                     Stock = 50,
-                    CategoryId = 1,
-                    ImageUrl = "https://res.cloudinary.com/demo/image/upload/v1/food/pastirma1.jpg",
+                    CategoryId = categories[0].Id,
+                    ImageUrl = "https://placehold.co/600x400/ff6b6b/white?text=Kayseri+Pastirması",
                     IsBestseller = true,
                     BestsellerOrder = 1,
                     IsCampaign = true,
@@ -97,8 +97,8 @@ namespace PastirmaApi.Infrastructure.Data
                     Description = "100% dana etinden üretilmiş, katkısız ve doğal baharatlarla hazırlanmış geleneksel dana sucuk.",
                     Price = 299.90m,
                     Stock = 100,
-                    CategoryId = 2,
-                    ImageUrl = "https://res.cloudinary.com/demo/image/upload/v1/food/sucuk1.jpg",
+                    CategoryId = categories[1].Id,
+                    ImageUrl = "https://placehold.co/600x400/e74c3c/white?text=Dana+Sucuk",
                     IsBestseller = true,
                     BestsellerOrder = 2,
                     IsCampaign = false,
@@ -113,8 +113,8 @@ namespace PastirmaApi.Infrastructure.Data
                     Price = 449.90m,
                     OldPrice = 549.90m,
                     Stock = 30,
-                    CategoryId = 3,
-                    ImageUrl = "https://res.cloudinary.com/demo/image/upload/v1/food/kavurma1.jpg",
+                    CategoryId = categories[2].Id,
+                    ImageUrl = "https://placehold.co/600x400/f39c12/white?text=Kavurma",
                     IsBestseller = false,
                     IsCampaign = true,
                     CampaignOrder = 2,
@@ -128,8 +128,8 @@ namespace PastirmaApi.Infrastructure.Data
                     Description = "Özel baharatlarla hazırlanmış, dana ve kuzu karışımı İnegöl köfte. Mangalda veya tavada muhteşem bir lezzet.",
                     Price = 349.90m,
                     Stock = 75,
-                    CategoryId = 4,
-                    ImageUrl = "https://res.cloudinary.com/demo/image/upload/v1/food/kofte1.jpg",
+                    CategoryId = categories[3].Id,
+                    ImageUrl = "https://placehold.co/600x400/8b4513/white?text=İnegöl+Köfte",
                     IsBestseller = true,
                     BestsellerOrder = 3,
                     IsNew = false,
@@ -142,8 +142,8 @@ namespace PastirmaApi.Infrastructure.Data
                     Description = "Pratik kullanım için özel olarak dilimlenmiş premium pastırma. Kahvaltı ve mezeler için ideal.",
                     Price = 189.90m,
                     Stock = 120,
-                    CategoryId = 1,
-                    ImageUrl = "https://res.cloudinary.com/demo/image/upload/v1/food/pastirma2.jpg",
+                    CategoryId = categories[0].Id,
+                    ImageUrl = "https://placehold.co/600x400/c0392b/white?text=Dilim+Pastırma",
                     IsCampaign = false,
                     IsNew = true,
                     CreatedDate = DateTime.UtcNow,
@@ -156,8 +156,8 @@ namespace PastirmaApi.Infrastructure.Data
                     Price = 429.90m,
                     OldPrice = 499.90m,
                     Stock = 45,
-                    CategoryId = 2,
-                    ImageUrl = "https://res.cloudinary.com/demo/image/upload/v1/food/sucuk2.jpg",
+                    CategoryId = categories[1].Id,
+                    ImageUrl = "https://placehold.co/600x400/d35400/white?text=Fermente+Sucuk",
                     IsCampaign = true,
                     CampaignOrder = 3,
                     IsNew = false,
@@ -170,8 +170,8 @@ namespace PastirmaApi.Infrastructure.Data
                     Description = "Antep usulü hazırlanmış, baharatlı ve lezzetli kavurma. Kahvaltı masalarınızın yıldızı.",
                     Price = 379.90m,
                     Stock = 60,
-                    CategoryId = 3,
-                    ImageUrl = "https://res.cloudinary.com/demo/image/upload/v1/food/kavurma2.jpg",
+                    CategoryId = categories[2].Id,
+                    ImageUrl = "https://placehold.co/600x400/e67e22/white?text=Antep+Kavurması",
                     IsBestseller = false,
                     IsNew = true,
                     CreatedDate = DateTime.UtcNow,
@@ -183,8 +183,8 @@ namespace PastirmaApi.Infrastructure.Data
                     Description = "Mangal için özel harmanlanmış köfte harcı. Sadece şekil verin ve pişirin!",
                     Price = 279.90m,
                     Stock = 90,
-                    CategoryId = 4,
-                    ImageUrl = "https://res.cloudinary.com/demo/image/upload/v1/food/kofte2.jpg",
+                    CategoryId = categories[3].Id,
+                    ImageUrl = "https://placehold.co/600x400/a0522d/white?text=Köfte+Karışımı",
                     IsBestseller = false,
                     IsNew = false,
                     CreatedDate = DateTime.UtcNow,
@@ -196,8 +196,8 @@ namespace PastirmaApi.Infrastructure.Data
                     Description = "Premium dana bonfile etinden hazırlanmış, geleneksel yöntemlerle kurutulmuş özel ürün.",
                     Price = 1299.90m,
                     Stock = 25,
-                    CategoryId = 5,
-                    ImageUrl = "https://res.cloudinary.com/demo/image/upload/v1/food/dried-beef.jpg",
+                    CategoryId = categories[4].Id,
+                    ImageUrl = "https://placehold.co/600x400/922b21/white?text=Dana+Bonfile",
                     IsBestseller = false,
                     IsCampaign = false,
                     IsNew = true,
@@ -212,8 +212,8 @@ namespace PastirmaApi.Infrastructure.Data
                     Price = 799.90m,
                     OldPrice = 899.90m,
                     Stock = 40,
-                    CategoryId = 2,
-                    ImageUrl = "https://res.cloudinary.com/demo/image/upload/v1/food/sucuk3.jpg",
+                    CategoryId = categories[1].Id,
+                    ImageUrl = "https://placehold.co/600x400/c0392b/white?text=Mangal+Sucuk",
                     IsBestseller = true,
                     BestsellerOrder = 4,
                     IsCampaign = true,
@@ -225,6 +225,9 @@ namespace PastirmaApi.Infrastructure.Data
 
             await _context.Products.AddRangeAsync(products);
             await _context.SaveChangesAsync();
+
+            // Reload products to ensure IDs are populated
+            var savedProducts = await _context.Products.OrderBy(p => p.Id).ToListAsync();
 
             Console.WriteLine("✓ Products seeded");
 
@@ -249,8 +252,8 @@ namespace PastirmaApi.Infrastructure.Data
                     Title = "Evde Pastırma Nasıl Saklanır?",
                     Content = "<p>Pastırmanın tazeliğini ve lezzetini korumak için doğru saklama koşulları çok önemlidir.</p><h2>Buzdolabında Saklama</h2><p>Pastırmanızı buzdolabının en soğuk bölümünde, tercihen 0-4°C arasında muhafaza edin. Orijinal ambalajında veya hava almayan bir kapta saklayın.</p><h2>Dondurucuda Saklama</h2><p>Uzun süreli saklama için dondurucuyu tercih edebilirsiniz. Porsiyonlara ayırıp vakumlu paketlerde dondurun.</p>",
                     Excerpt = "Pastırmanın tazeliğini ve lezzetini uzun süre korumak için doğru saklama yöntemlerini öğrenin.",
-                    ImageUrl = "https://res.cloudinary.com/demo/image/upload/v1/blog/storage.jpg",
-                    CategoryId = 1,
+                    ImageUrl = "https://placehold.co/800x400/3498db/white?text=Blog+Saklama",
+                    CategoryId = blogCategories[0].Id, // Tarifler
                     AuthorId = adminUser.Id,
                     PublishedDate = DateTime.UtcNow.AddDays(-10),
                     IsFeatured = true,
@@ -265,8 +268,8 @@ namespace PastirmaApi.Infrastructure.Data
                     Title = "Pastırma ve Sucuk Arasındaki Farklar",
                     Content = "<p>Türk mutfağının iki vazgeçilmez ürünü pastırma ve sucuk, üretim yöntemleri ve lezzet profilleri açısından farklılık gösterir.</p><h2>Üretim Süreci</h2><p>Pastırma, dana etinin çemen ile kaplanıp kurutulmasıyla; sucuk ise kıyma haline getirilip baharatlarla karıştırılıp bağırsağa doldurulmasıyla üretilir.</p><h2>Kullanım Alanları</h2><p>Pastırma genellikle dilim dilim servis edilirken, sucuk pişirilerek tüketilir.</p>",
                     Excerpt = "Türk mutfağının iki önemli ürünü pastırma ve sucuğun üretim süreçleri ve kullanım alanlarındaki farkları keşfedin.",
-                    ImageUrl = "https://res.cloudinary.com/demo/image/upload/v1/blog/difference.jpg",
-                    CategoryId = 2,
+                    ImageUrl = "https://placehold.co/800x400/2ecc71/white?text=Blog+Farklar",
+                    CategoryId = blogCategories[1].Id, // Bilgi
                     AuthorId = adminUser.Id,
                     PublishedDate = DateTime.UtcNow.AddDays(-7),
                     IsFeatured = true,
@@ -281,8 +284,8 @@ namespace PastirmaApi.Infrastructure.Data
                     Title = "Kayseri Pastırmasının Tarihi",
                     Content = "<p>Kayseri pastırması, yüzyıllardır Anadolu mutfağının en değerli ürünlerinden biri olarak varlığını sürdürmektedir.</p><h2>Tarihçe</h2><p>Pastırma yapımı, göçebe Türklerin et saklama yöntemlerinden gelişerek günümüze kadar gelmiştir. Özellikle Kayseri bölgesi, iklim koşulları sayesinde pastırma üretiminde öne çıkmıştır.</p><h2>Geleneksel Üretim</h2><p>Geleneksel üretim yöntemleri, kuşaktan kuşağa aktarılarak günümüze kadar korunmuştur.</p>",
                     Excerpt = "Asırlık bir geleneğe sahip Kayseri pastırmasının tarihini ve kültürel önemini keşfedin.",
-                    ImageUrl = "https://res.cloudinary.com/demo/image/upload/v1/blog/history.jpg",
-                    CategoryId = 3,
+                    ImageUrl = "https://placehold.co/800x400/e67e22/white?text=Blog+Tarih",
+                    CategoryId = blogCategories[2].Id, // Hikayeler
                     AuthorId = adminUser.Id,
                     PublishedDate = DateTime.UtcNow.AddDays(-5),
                     IsFeatured = true,
@@ -307,7 +310,7 @@ namespace PastirmaApi.Infrastructure.Data
                     Title = "Premium Kayseri Pastırması",
                     Subtitle = "Geleneksel lezzet, modern kalite",
                     Description = "Özenle seçilmiş dana etinden, geleneksel yöntemlerle üretilmiş premium pastırma",
-                    ImageUrl = "https://res.cloudinary.com/demo/image/upload/v1/hero/slide1.jpg",
+                    ImageUrl = "https://placehold.co/1920x600/ff6b6b/white?text=Kayseri+Pastırması",
                     ButtonText = "Hemen İncele",
                     ButtonLink = "/products?filter=best-sellers",
                     DisplayOrder = 1,
@@ -320,7 +323,7 @@ namespace PastirmaApi.Infrastructure.Data
                     Title = "Taze Sucuk Çeşitleri",
                     Subtitle = "%100 Dana Eti",
                     Description = "Katkısız, doğal ve taze sucuk çeşitlerimizle sofralarınıza lezzet katın",
-                    ImageUrl = "https://res.cloudinary.com/demo/image/upload/v1/hero/slide2.jpg",
+                    ImageUrl = "https://placehold.co/1920x600/e74c3c/white?text=Taze+Sucuk",
                     ButtonText = "Ürünleri Gör",
                     ButtonLink = "/products?category=2",
                     DisplayOrder = 2,
@@ -333,7 +336,7 @@ namespace PastirmaApi.Infrastructure.Data
                     Title = "Kampanyalı Ürünler",
                     Subtitle = "Fırsatları Kaçırmayın",
                     Description = "Seçili ürünlerde %20'ye varan indirimler",
-                    ImageUrl = "https://res.cloudinary.com/demo/image/upload/v1/hero/slide3.jpg",
+                    ImageUrl = "https://placehold.co/1920x600/f39c12/white?text=Kampanya",
                     ButtonText = "Kampanyaları Gör",
                     ButtonLink = "/products?filter=campaign",
                     DisplayOrder = 3,
@@ -354,7 +357,7 @@ namespace PastirmaApi.Infrastructure.Data
                 new Review
                 {
                     UserId = customerUser.Id,
-                    ProductId = 1,
+                    ProductId = savedProducts[0].Id, // Kayseri Pastırması Premium
                     Rating = 5,
                     Comment = "Harika bir ürün! Gerçekten çok kaliteli ve lezzetli. Kesinlikle tavsiye ederim.",
                     Status = ReviewStatus.Approved,
@@ -365,7 +368,7 @@ namespace PastirmaApi.Infrastructure.Data
                 new Review
                 {
                     UserId = customerUser.Id,
-                    ProductId = 2,
+                    ProductId = savedProducts[1].Id, // Dana Sucuk 500gr
                     Rating = 4,
                     Comment = "Çok güzel bir sucuk. Kahvaltıda harika oluyor. Fiyat performans olarak iyi.",
                     Status = ReviewStatus.Approved,
@@ -376,7 +379,7 @@ namespace PastirmaApi.Infrastructure.Data
                 new Review
                 {
                     UserId = customerUser.Id,
-                    ProductId = 4,
+                    ProductId = savedProducts[3].Id, // İnegöl Köfte (1kg)
                     Rating = 5,
                     Comment = "İnegöl köfte denilince akla ilk gelen bu ürün olmalı. Muhteşem lezzet!",
                     Status = ReviewStatus.Approved,

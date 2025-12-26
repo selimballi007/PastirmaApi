@@ -65,6 +65,7 @@ namespace PastirmaApi.Application.Services
             }
 
             var products = await query
+                .Include(p => p.Category)
                 .OrderByDescending(p => p.CreatedDate)
                 .ToListAsync();
 
@@ -78,7 +79,9 @@ namespace PastirmaApi.Application.Services
             if (includeImages)            
                 query = query.Include(p => p.Images);            
 
-            var product = await query.FirstOrDefaultAsync();
+            var product = await query
+                .Include(p=>p.Category)
+                .FirstOrDefaultAsync();
             return product != null ? MapToDto(product) : null;
         }
         public async Task<ProductDTO> CreateProductAsync(CreateProductRequestDTO request)
