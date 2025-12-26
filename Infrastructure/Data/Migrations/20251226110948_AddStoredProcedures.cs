@@ -33,7 +33,7 @@ namespace PastirmaApi.Infrastructure.Data.Migrations
                     SET
                         refresh_token = p_new_refresh_token,
                         refresh_token_expiry = p_new_refresh_token_expiry,
-                        updated_at = CURRENT_TIMESTAMP
+                        updated_date = CURRENT_TIMESTAMP
                     WHERE
                         id = p_user_id
                         AND refresh_token = p_old_refresh_token
@@ -59,7 +59,7 @@ namespace PastirmaApi.Infrastructure.Data.Migrations
                     id INTEGER,
                     username TEXT,
                     email TEXT,
-                    role TEXT,
+                    role INTEGER,
                     password_hash TEXT,
                     last_login_at TIMESTAMP WITH TIME ZONE,
                     refresh_token TEXT,
@@ -75,7 +75,7 @@ namespace PastirmaApi.Infrastructure.Data.Migrations
                         last_login_at = CURRENT_TIMESTAMP,
                         refresh_token = p_refresh_token,
                         refresh_token_expiry = p_refresh_token_expiry,
-                        updated_at = CURRENT_TIMESTAMP
+                        updated_date = CURRENT_TIMESTAMP
                     WHERE
                         users.email = p_email
                         AND is_active = true;
@@ -84,12 +84,12 @@ namespace PastirmaApi.Infrastructure.Data.Migrations
                     RETURN QUERY
                     SELECT
                         u.id,
-                        u.username,
-                        u.email,
+                        u.username::TEXT,
+                        u.email::TEXT,
                         u.role,
-                        u.password_hash,
+                        u.password_hash::TEXT,
                         u.last_login_at,
-                        u.refresh_token,
+                        u.refresh_token::TEXT,
                         u.refresh_token_expiry,
                         u.is_verified
                     FROM users u

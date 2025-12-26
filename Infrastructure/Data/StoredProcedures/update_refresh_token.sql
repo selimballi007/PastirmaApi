@@ -26,7 +26,7 @@ BEGIN
     SET
         refresh_token = p_new_refresh_token,
         refresh_token_expiry = p_new_refresh_token_expiry,
-        updated_at = CURRENT_TIMESTAMP
+        updated_date = CURRENT_TIMESTAMP
     WHERE
         id = p_user_id
         AND refresh_token = p_old_refresh_token
