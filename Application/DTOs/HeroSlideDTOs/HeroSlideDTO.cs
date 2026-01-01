@@ -1,4 +1,4 @@
-﻿namespace PastirmaApi.Application.DTOs.HeroSlideDTOs
+namespace PastirmaApi.Application.DTOs.HeroSlideDTOs
 {
     public class HeroSlideDTO
     {
@@ -10,7 +10,7 @@
         public string ImageUrl { get; set; } = string.Empty;
         public string ButtonText { get; set; } = string.Empty;
         public string ButtonLink { get; set; } = string.Empty;
-        public string BgColor { get; set; } = string.Empty;
+        public string? BgColor { get; set; } = string.Empty;
         public int DisplayOrder { get; set; }
         public bool IsActive { get; set; }
         public DateTime CreatedAt { get; set; }

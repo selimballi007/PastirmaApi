@@ -10,7 +10,7 @@ namespace PastirmaApi.API.Controllers
 {
     // Controllers/FavoritesController.cs
     [ApiController]
-    [Route("api/[controller]")]
+    [Route("api/favorite")]
     [Authorize]
     public class FavoriteController : ControllerBase
     {

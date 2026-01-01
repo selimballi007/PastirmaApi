@@ -26,11 +26,10 @@ namespace PastirmaApi.Infrastructure.Identity
 
             var claims = new[]
             {
-                new Claim(JwtRegisteredClaimNames.Sub, userDto.Id.ToString()),
-                new Claim(ClaimTypes.NameIdentifier, userDto.Id.ToString()), // extra added
+                new Claim(JwtRegisteredClaimNames.Sub, userDto.Id.ToString()),  // Auto-mapped to ClaimTypes.NameIdentifier
                 new Claim(ClaimTypes.Name, userDto.Username!),
                 new Claim(JwtRegisteredClaimNames.Email, userDto.Email),
-                new Claim("role", userDto.Role.ToString())
+                new Claim(ClaimTypes.Role, userDto.Role.ToString())
             };
 
             var token = new JwtSecurityToken(
@@ -86,7 +85,7 @@ namespace PastirmaApi.Infrastructure.Identity
             try
             {
                 var principal = tokenHandler.ValidateToken(token, validationParameters, out _);
-                var email = principal.FindFirst("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress")?.Value;
+                var email = principal.FindFirst(ClaimTypes.Email)?.Value;  // ClaimTypes.Email resolves to the full URI
                 return email;
             }
             catch (Exception ex)

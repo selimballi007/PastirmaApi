@@ -105,6 +105,8 @@ namespace PastirmaApi.Application.Services
         public async Task<ProductDTO?> UpdateProductAsync(int id, UpdateProductRequestDTO request)
         {
             var product = await _context.Products
+                .Include(p => p.Category)
+                .Include(p => p.Images)
                 .FirstOrDefaultAsync(p => p.Id == id);
 
             if (product == null)
@@ -119,6 +121,25 @@ namespace PastirmaApi.Application.Services
             product.CategoryId = request.CategoryId;
             product.ImageUrl = request.ImageUrl ?? string.Empty;
             product.IsActive = request.IsActive;
+
+            // Handle images update
+            if (request.Images != null)
+            {
+                // Remove existing images
+                _context.ProductImages.RemoveRange(product.Images);
+
+                // Add new images
+                foreach (var imageDto in request.Images)
+                {
+                    product.Images.Add(new ProductImage
+                    {
+                        ImageUrl = imageDto.ImageUrl,
+                        DisplayOrder = imageDto.DisplayOrder,
+                        IsPrimary = imageDto.IsPrimary,
+                        ProductId = product.Id
+                    });
+                }
+            }
 
             await _context.SaveChangesAsync();
 
@@ -195,10 +216,15 @@ namespace PastirmaApi.Application.Services
                 IsSpecialOffer= product.IsSpecialOffer,
                 CampaignOrder = product.CampaignOrder,
                 BestSellerOrder = product.BestsellerOrder,
-                Images = product.Images,
+                Images = product.Images?.Select(img => new ProductImageDTO
+                {
+                    ImageUrl = img.ImageUrl,
+                    DisplayOrder = img.DisplayOrder,
+                    IsPrimary = img.IsPrimary
+                }).ToList(),
                 Rating = 0,
                 ReviewCount= 0,
-                SalesCount = 0                
+                SalesCount = 0
             };
         }
     }

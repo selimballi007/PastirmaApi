@@ -1,4 +1,4 @@
-ï»¿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using PastirmaApi.Application.DTOs.ReviewDTO;
 using PastirmaApi.Application.DTOs.ReviewDTOs;
 using PastirmaApi.Application.Interfaces.Services;
@@ -23,27 +23,27 @@ namespace PastirmaApi.Application.Services
         {
             try
             {
-                // âœ… KullanÄ±cÄ± bu Ã¼rÃ¼nÃ¼ satÄ±n almÄ±ÅŸ mÄ±?
+                // ? Kullanýcý bu ürünü satýn almýþ mý?
                 var hasPurchased = await HasUserPurchasedProductAsync(userId, dto.ProductId);
                 if (!hasPurchased)
                 {
-                    throw new UnauthorizedAccessException("Bu Ã¼rÃ¼nÃ¼ satÄ±n almadan yorum yapamazsÄ±nÄ±z.");
+                    throw new UnauthorizedAccessException("Bu ürünü satýn almadan yorum yapamazsýnýz.");
                 }
 
-                // âœ… Daha Ã¶nce yorum yapmÄ±ÅŸ mÄ±?
+                // ? Daha önce yorum yapmýþ mý?
                 var existingReview = await _context.Reviews
                     .FirstOrDefaultAsync(r => r.UserId == userId && r.ProductId == dto.ProductId);
 
                 if (existingReview != null)
                 {
-                    throw new InvalidOperationException("Bu Ã¼rÃ¼n iÃ§in zaten yorum yaptÄ±nÄ±z.");
+                    throw new InvalidOperationException("Bu ürün için zaten yorum yaptýnýz.");
                 }
 
-                // âœ… ÃœrÃ¼n var mÄ±?
+                // ? Ürün var mý?
                 var product = await _context.Products.FindAsync(dto.ProductId);
                 if (product == null)
                 {
-                    throw new NotFoundException("ÃœrÃ¼n bulunamadÄ±.");
+                    throw new NotFoundException("Ürün bulunamadý.");
                 }
 
                 var review = new Review
@@ -77,7 +77,7 @@ namespace PastirmaApi.Application.Services
 
             if (review == null)
             {
-                throw new NotFoundException("Yorum bulunamadÄ±.");
+                throw new NotFoundException("Yorum bulunamadý.");
             }
 
             return MapToDto(review);
@@ -146,6 +146,40 @@ namespace PastirmaApi.Application.Services
             };
         }
 
+        public async Task<PagedResult<ReviewDTO>> GetAllReviewsByStatusAsync(int page, int pageSize, string? status)
+        {
+            var query = _context.Reviews
+                .Include(r => r.User)
+                .Include(r => r.Product)
+                .AsQueryable();
+
+            // Filter by status if provided
+            if (!string.IsNullOrEmpty(status) && status != "All")
+            {
+                if (Enum.TryParse<ReviewStatus>(status, true, out var reviewStatus))
+                {
+                    query = query.Where(r => r.Status == reviewStatus);
+                }
+            }
+
+            query = query.OrderByDescending(r => r.CreatedDate);
+
+            var totalCount = await query.CountAsync();
+            var reviews = await query
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            return new PagedResult<ReviewDTO>
+            {
+                Data = reviews.Select(MapToDto).ToList(),
+                TotalCount = totalCount,
+                Page = page,
+                PageSize = pageSize,
+                TotalPages = (int)Math.Ceiling(totalCount / (double)pageSize)
+            };
+        }
+
         public async Task<bool> ApproveReviewAsync(int reviewId)
         {
             try
@@ -153,7 +187,7 @@ namespace PastirmaApi.Application.Services
                 var review = await _context.Reviews.FindAsync(reviewId);
                 if (review == null)
                 {
-                    throw new NotFoundException("Yorum bulunamadÄ±.");
+                    throw new NotFoundException("Yorum bulunamadý.");
                 }
 
                 if (review.Status == ReviewStatus.Approved)
@@ -182,7 +216,7 @@ namespace PastirmaApi.Application.Services
                 var review = await _context.Reviews.FindAsync(reviewId);
                 if (review == null)
                 {
-                    throw new NotFoundException("Yorum bulunamadÄ±.");
+                    throw new NotFoundException("Yorum bulunamadý.");
                 }
 
                 review.Status = ReviewStatus.Rejected;
@@ -206,10 +240,10 @@ namespace PastirmaApi.Application.Services
                 var review = await _context.Reviews.FindAsync(reviewId);
                 if (review == null)
                 {
-                    throw new NotFoundException("Yorum bulunamadÄ±.");
+                    throw new NotFoundException("Yorum bulunamadý.");
                 }
 
-                // âœ… Sadece kendi yorumunu silebilir
+                // ? Sadece kendi yorumunu silebilir
                 if (review.UserId != userId)
                 {
                     throw new UnauthorizedAccessException("Bu yorumu silme yetkiniz yok.");
@@ -283,14 +317,14 @@ namespace PastirmaApi.Application.Services
 
         public async Task<bool> CanUserReviewProductAsync(int userId, int productId)
         {
-            // âœ… ÃœrÃ¼nÃ¼ satÄ±n almÄ±ÅŸ mÄ±?
+            // ? Ürünü satýn almýþ mý?
             var hasPurchased = await HasUserPurchasedProductAsync(userId, productId);
             if (!hasPurchased)
             {
                 return false;
             }
 
-            // âœ… Daha Ã¶nce yorum yapmÄ±ÅŸ mÄ±?
+            // ? Daha önce yorum yapmýþ mý?
             var hasReviewed = await _context.Reviews
                 .AnyAsync(r => r.UserId == userId && r.ProductId == productId);
 
@@ -301,7 +335,7 @@ namespace PastirmaApi.Application.Services
         private async Task<bool> HasUserPurchasedProductAsync(int userId, int productId)
         {
             return await _context.Orders
-                .Where(o => o.UserId == userId && o.Status == OrderStatus.Completed)
+                .Where(o => o.UserId == userId && o.Status == OrderStatus.Delivered)
                 .SelectMany(o => o.OrderItems)
                 .AnyAsync(oi => oi.ProductId == productId);
         }

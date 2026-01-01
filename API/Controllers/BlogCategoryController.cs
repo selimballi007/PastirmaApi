@@ -7,7 +7,7 @@ using PastirmaApi.Core.Exceptions;
 namespace PastirmaApi.API.Controllers
 {
     [ApiController]
-    [Route("api/[controller]")]
+    [Route("api/blog-category")]
     public class BlogCategoryController : ControllerBase
     {
         private readonly IBlogCategoryService _blogCategoryService;

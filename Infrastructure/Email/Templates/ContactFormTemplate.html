@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .header {
+            background-color: #ea580c;
+            color: white;
+            padding: 20px;
+            text-align: center;
+            border-radius: 5px 5px 0 0;
+        }
+        .content {
+            background-color: #f9f9f9;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 0 0 5px 5px;
+        }
+        .field {
+            margin-bottom: 15px;
+        }
+        .field-label {
+            font-weight: bold;
+            color: #555;
+        }
+        .field-value {
+            margin-top: 5px;
+            padding: 10px;
+            background-color: white;
+            border-left: 3px solid #ea580c;
+        }
+        .footer {
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid #ddd;
+            font-size: 12px;
+            color: #999;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h2>Yeni İletişim Formu Mesajı</h2>
+        <p>Pastırma Adası - İletişim Formu</p>
+    </div>
+    
+    <div class="content">
+        <p>Web sitenizdeki iletişim formundan yeni bir mesaj aldınız:</p>
+        
+        <div class="field">
+            <div class="field-label">Gönderen:</div>
+            <div class="field-value">{{Name}}</div>
+        </div>
+        
+        <div class="field">
+            <div class="field-label">E-posta:</div>
+            <div class="field-value"><a href="mailto:{{Email}}">{{Email}}</a></div>
+        </div>
+        
+        <div class="field">
+            <div class="field-label">Telefon:</div>
+            <div class="field-value">{{Phone}}</div>
+        </div>
+        
+        <div class="field">
+            <div class="field-label">Konu:</div>
+            <div class="field-value">{{Subject}}</div>
+        </div>
+        
+        <div class="field">
+            <div class="field-label">Mesaj:</div>
+            <div class="field-value">{{Message}}</div>
+        </div>
+        
+        <div class="field">
+            <div class="field-label">Gönderim Tarihi:</div>
+            <div class="field-value">{{Date}}</div>
+        </div>
+    </div>
+    
+    <div class="footer">
+        <p>Bu mesaj Pastırma Adası iletişim formu aracılığıyla gönderilmiştir.</p>
+        <p>Mesajı yanıtlamak için yukarıdaki e-posta adresini kullanabilirsiniz.</p>
+    </div>
+</body>
+</html>

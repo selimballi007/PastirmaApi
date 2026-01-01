@@ -20,6 +20,8 @@ namespace PastirmaApi.Infrastructure.Email
                 EmailTemplateType.PasswordReset => "Şifre Sıfırlama - Pastırma",
                 EmailTemplateType.EmailVerification => "Email Doğrulama - Pastırma",
                 EmailTemplateType.Welcome => $"Hoşgeldiniz - Pastırma",
+                EmailTemplateType.ContactForm => "Yeni İletişim Formu Mesajı - Pastırma Adası",
+                EmailTemplateType.ContactFormReply => "Mesajınıza Yanıt - Pastırma Adası",
                 _ => "Pastırma"
             };
         }
@@ -31,6 +33,8 @@ namespace PastirmaApi.Infrastructure.Email
                 EmailTemplateType.PasswordReset => "ResetPasswordTemplate.html",
                 EmailTemplateType.EmailVerification => "EmailVerificationTemplate.html",
                 EmailTemplateType.Welcome => $"WelcomeTemplate.html",
+                EmailTemplateType.ContactForm => "ContactFormTemplate.html",
+                EmailTemplateType.ContactFormReply => "ContactFormReplyTemplate.html",
                 _ => "Pastırma"
             };
         }
@@ -60,7 +64,9 @@ namespace PastirmaApi.Infrastructure.Email
     {
         PasswordReset,
         EmailVerification,
-        Welcome
+        Welcome,
+        ContactForm,
+        ContactFormReply
     }
 
 }

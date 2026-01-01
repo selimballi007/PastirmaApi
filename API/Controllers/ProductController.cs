@@ -6,7 +6,7 @@ using PastirmaApi.Application.Interfaces.Services;
 
 namespace PastirmaApi.API.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("api/product")]
     [ApiController]
     public class ProductController : ControllerBase
     {

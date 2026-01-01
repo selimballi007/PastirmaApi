@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Npgsql;
+using PastirmaApi.Application.DTOs.ReviewDTOs;
 using PastirmaApi.Application.DTOs.UserDTOs;
 using PastirmaApi.Application.Interfaces.Repositories;
 using PastirmaApi.Core.Entities;
@@ -150,6 +151,81 @@ namespace PastirmaApi.Infrastructure.Data.Repositories
             result.refresh_token_expiry,
             result.is_verified
             );
+        }
+
+        public async Task<PagedResult<CustomerDTO>> GetAllCustomersAsync(int page, int pageSize)
+        {
+            var query = _context.Users
+                .Where(u => u.Role == UserRole.Customer)
+                .OrderByDescending(u => u.CreatedDate);
+
+            var totalCount = await query.CountAsync();
+            var totalPages = (int)Math.Ceiling(totalCount / (double)pageSize);
+
+            var customers = await query
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .Select(u => new CustomerDTO
+                {
+                    Id = u.Id,
+                    Email = u.Email,
+                    Username = u.Username,
+                    FullName = u.FullName,
+                    IsVerified = u.IsVerified,
+                    IsGuest = u.IsGuest,
+                    Role = u.Role,
+                    LastLoginAt = u.LastLoginAt,
+                    CreatedAt = u.CreatedDate,
+                    TotalOrders = u.Orders.Count,
+                    TotalReviews = u.Reviews.Count
+                })
+                .AsNoTracking()
+                .ToListAsync();
+
+            return new PagedResult<CustomerDTO>
+            {
+                Data = customers,
+                TotalCount = totalCount,
+                Page = page,
+                PageSize = pageSize,
+                TotalPages = totalPages
+            };
+        }
+
+        public async Task<UserProfileDTO?> GetUserProfileByIdAsync(int userId)
+        {
+            return await _context.Users
+                .Where(u => u.Id == userId)
+                .Select(u => new UserProfileDTO
+                {
+                    Id = u.Id,
+                    Email = u.Email,
+                    Username = u.Username,
+                    FullName = u.FullName,
+                    IsVerified = u.IsVerified,
+                    Role = u.Role,
+                    LastLoginAt = u.LastLoginAt,
+                    CreatedAt = u.CreatedDate
+                })
+                .AsNoTracking()
+                .FirstOrDefaultAsync();
+        }
+
+        public async Task<User?> GetUserByIdAsync(int userId)
+        {
+            return await _context.Users
+                .Where(u => u.Id == userId)
+                .FirstOrDefaultAsync();
+        }
+
+        public async Task UpdateUserProfileAsync(int userId, string username, string? fullName)
+        {
+            await _context.Users
+                .Where(u => u.Id == userId)
+                .ExecuteUpdateAsync(s => s
+                    .SetProperty(u => u.Username, username)
+                    .SetProperty(u => u.FullName, fullName)
+                );
         }
     }
 }

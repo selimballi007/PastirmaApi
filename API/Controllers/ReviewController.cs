@@ -11,7 +11,7 @@ namespace PastirmaApi.API.Controllers
 {
     // Controllers/ReviewsController.cs
     [ApiController]
-    [Route("api/[controller]")]
+    [Route("api/reviews")]
     public class ReviewsController : ControllerBase
     {
         private readonly IReviewService _reviewService;
@@ -168,6 +168,29 @@ namespace PastirmaApi.API.Controllers
             {
                 _logger.LogError(ex, "Error getting pending reviews");
                 return StatusCode(500, new { message = "Bekleyen yorumlar getirilirken bir hata oluştu." });
+            }
+        }
+
+        // GET: api/reviews/all?page=1&pageSize=10&status=Approved
+        [HttpGet("all")]
+        [Authorize(Roles = "Admin")]
+        public async Task<ActionResult<PagedResult<ReviewDTO>>> GetAllReviews(
+            [FromQuery] int page = 1,
+            [FromQuery] int pageSize = 10,
+            [FromQuery] string? status = null)
+        {
+            try
+            {
+                if (page < 1) page = 1;
+                if (pageSize < 1 || pageSize > 50) pageSize = 10;
+
+                var result = await _reviewService.GetAllReviewsByStatusAsync(page, pageSize, status);
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error getting reviews by status: {Status}", status);
+                return StatusCode(500, new { message = "Yorumlar getirilirken bir hata oluştu." });
             }
         }
 

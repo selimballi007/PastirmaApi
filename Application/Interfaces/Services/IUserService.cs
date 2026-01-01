@@ -1,4 +1,5 @@
-﻿using PastirmaApi.Application.DTOs.UserDTOs;
+﻿using PastirmaApi.Application.DTOs.ReviewDTOs;
+using PastirmaApi.Application.DTOs.UserDTOs;
 
 namespace PastirmaApi.Application.Interfaces.Services
 {
@@ -14,5 +15,9 @@ namespace PastirmaApi.Application.Interfaces.Services
         Task ResetPasswordAsync(ResetPasswordDTO dto);
         Task<LoginTransDTO> RefreshAccessTokenAsync(string refreshToken, string accessToken);
         Task LogoutAsync(int userId);
+        Task<PagedResult<CustomerDTO>> GetAllCustomersAsync(int page, int pageSize);
+        Task<UserProfileDTO> GetUserProfileAsync(int userId);
+        Task<UserProfileDTO> UpdateUserProfileAsync(int userId, UpdateProfileDTO dto);
+        Task ChangePasswordAsync(int userId, ChangePasswordDTO dto);
     }
 }

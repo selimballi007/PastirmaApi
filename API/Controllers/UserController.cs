@@ -9,7 +9,7 @@ using System.Security.Claims;
 namespace PastirmaApi.API.Controllers
 {
     [ApiController]
-    [Route("api/[controller]")]
+    [Route("api/user")]
     public class UserController:ControllerBase
     {
         private readonly IUserService _userService;
@@ -167,6 +167,94 @@ namespace PastirmaApi.API.Controllers
                 refreshToken = Request.Cookies["refreshToken"] ?? "NOT FOUND"
             });
         }
+
+        [HttpGet("customers")]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> GetAllCustomers([FromQuery] int page = 1, [FromQuery] int pageSize = 10)
+        {
+            try
+            {
+                if (page < 1) page = 1;
+                if (pageSize < 1 || pageSize > 100) pageSize = 10;
+
+                var result = await _userService.GetAllCustomersAsync(page, pageSize);
+                return Ok(result);
+            }
+            catch (Exception)
+            {
+                return StatusCode(500, new { message = "Müşteriler getirilirken bir hata oluştu." });
+            }
+        }
+
+        [HttpGet("profile")]
+        [Authorize]
+        public async Task<IActionResult> GetProfile()
+        {
+            try
+            {
+                var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                if (string.IsNullOrEmpty(userId))
+                    return Unauthorized();
+
+                var profile = await _userService.GetUserProfileAsync(int.Parse(userId));
+                return Ok(profile);
+            }
+            catch (BusinessException ex)
+            {
+                return NotFound(new { message = ex.Message });
+            }
+            catch (Exception)
+            {
+                return StatusCode(500, new { message = "Profil bilgileri getirilirken bir hata oluştu." });
+            }
+        }
+
+        [HttpPut("profile")]
+        [Authorize]
+        public async Task<IActionResult> UpdateProfile([FromBody] UpdateProfileDTO dto)
+        {
+            try
+            {
+                var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                if (string.IsNullOrEmpty(userId))
+                    return Unauthorized();
+
+                var profile = await _userService.UpdateUserProfileAsync(int.Parse(userId), dto);
+                return Ok(new { message = "Profil başarıyla güncellendi", profile });
+            }
+            catch (BusinessException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+            catch (Exception)
+            {
+                return StatusCode(500, new { message = "Profil güncellenirken bir hata oluştu." });
+            }
+        }
+
+        [HttpPost("change-password")]
+        [Authorize]
+        public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordDTO dto)
+        {
+            try
+            {
+                var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                if (string.IsNullOrEmpty(userId))
+                    return Unauthorized();
+
+                await _userService.ChangePasswordAsync(int.Parse(userId), dto);
+                return Ok(new { message = "Şifre başarıyla değiştirildi" });
+            }
+            catch (BusinessException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+            catch (Exception)
+            {
+                return StatusCode(500, new { message = "Şifre değiştirilirken bir hata oluştu." });
+            }
+        }
+
         private void AccessTokenCookieSettings(string accessToken)
         {
             System.Diagnostics.Debug.WriteLine($"[AccessTokenCookieSettings] Called");

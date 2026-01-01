@@ -101,17 +101,30 @@ namespace PastirmaApi.Application.Services
 
             try
             {
-                // First, get the image to find its URL
-                var getParams = new GetResourceParams(publicId)
+                string imageUrl = string.Empty;
+                List<ProductUsageDTO> productsUsing = new List<ProductUsageDTO>();
+
+                // Only get the resource URL if we need to update the database
+                if (updateDatabase)
                 {
-                    ResourceType = ResourceType.Image
-                };
+                    try
+                    {
+                        var getParams = new GetResourceParams(publicId)
+                        {
+                            ResourceType = ResourceType.Image
+                        };
 
-                var resource = await _cloudinary.GetResourceAsync(getParams);
-                var imageUrl = resource.SecureUrl?.ToString() ?? string.Empty;
+                        var resource = await _cloudinary.GetResourceAsync(getParams);
+                        imageUrl = resource.SecureUrl?.ToString() ?? string.Empty;
 
-                // Check what products are using this image
-                var productsUsing = await GetProductsUsingImageAsync(imageUrl);
+                        // Check what products are using this image
+                        productsUsing = await GetProductsUsingImageAsync(imageUrl);
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogWarning(ex, "Could not get resource info for {PublicId}, continuing with deletion", publicId);
+                    }
+                }
 
                 // Delete from Cloudinary
                 var deleteParams = new DeletionParams(publicId)
@@ -121,13 +134,27 @@ namespace PastirmaApi.Application.Services
 
                 var deleteResult = await _cloudinary.DestroyAsync(deleteParams);
 
+                _logger.LogInformation("Cloudinary delete result for {PublicId}: {Result}", publicId, deleteResult.Result);
+
                 if (deleteResult.Result == "ok")
                 {
                     resultDto.Success = true;
-                    resultDto.Message = "Image deleted successfully from Cloudinary";
+                    resultDto.Message = $"Image deleted successfully from Cloudinary (PublicId: {publicId})";
+                }
+                else if (deleteResult.Result == "not found")
+                {
+                    resultDto.Success = true;
+                    resultDto.Message = $"Image not found in Cloudinary (PublicId: {publicId}). It may have been already deleted.";
+                }
+                else
+                {
+                    resultDto.Success = false;
+                    resultDto.Message = $"Failed to delete image from Cloudinary: {deleteResult.Result}";
+                    return resultDto;
+                }
 
-                    // Update database if requested
-                    if (updateDatabase && productsUsing.Any())
+                // Update database if requested
+                if (updateDatabase && productsUsing.Any())
                     {
                         foreach (var usage in productsUsing)
                         {
@@ -166,12 +193,6 @@ namespace PastirmaApi.Application.Services
                         await _context.SaveChangesAsync();
                         resultDto.Message += $" and updated {resultDto.UpdatedProducts.Count} product(s) in database";
                     }
-                }
-                else
-                {
-                    resultDto.Success = false;
-                    resultDto.Message = $"Failed to delete image from Cloudinary: {deleteResult.Result}";
-                }
 
                 return resultDto;
             }

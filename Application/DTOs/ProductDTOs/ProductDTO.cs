@@ -1,5 +1,3 @@
-﻿using PastirmaApi.Core.Entities;
-
 namespace PastirmaApi.Application.DTOs.ProductDTOs
 {
     public class ProductDTO
@@ -25,6 +23,6 @@ namespace PastirmaApi.Application.DTOs.ProductDTOs
         public int SalesCount { get; set; } = 0;
         public DateTime CreatedAt { get; set; }
         public DateTime UpdatedAt { get; set; }
-        public ICollection<ProductImage>? Images { get; set; } = new List<ProductImage>();
+        public ICollection<ProductImageDTO>? Images { get; set; } = new List<ProductImageDTO>();
     }
 }

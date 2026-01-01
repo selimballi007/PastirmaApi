@@ -1,4 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations;
 
 namespace PastirmaApi.Application.DTOs.HeroSlideDTOs
 {
@@ -28,8 +28,7 @@ namespace PastirmaApi.Application.DTOs.HeroSlideDTOs
         [MaxLength(200)]
         public string ButtonLink { get; set; } = "/products";
 
-        [Required]
         [MaxLength(100)]
-        public string BgColor { get; set; } = "from-amber-600 to-orange-700";
+        public string? BgColor { get; set; } = "from-amber-600 to-orange-700";
     }
 }

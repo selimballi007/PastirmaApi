@@ -45,6 +45,15 @@ namespace PastirmaApi.API.Middlewares
                 return;
             }
 
+            // ✅ DEVELOPMENT MODE: Skip CAPTCHA for Swagger/Postman testing
+            var env = context.RequestServices.GetRequiredService<IWebHostEnvironment>();
+            if (env.IsDevelopment())
+            {
+                _logger.LogInformation("Development mode: Skipping CAPTCHA verification for {Path}", context.Request.Path);
+                await _next(context);
+                return;
+            }
+
             // ✅ Early return: Korumasız endpoint'lerde 0ms overhead
             if (!IsProtectedEndpoint(context.Request.Path))
             {

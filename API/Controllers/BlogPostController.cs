@@ -8,7 +8,7 @@ using System.Security.Claims;
 namespace PastirmaApi.API.Controllers
 {
     [ApiController]
-    [Route("api/[controller]")]
+    [Route("api/blog-post")]
     public class BlogPostController : ControllerBase
     {
         private readonly IBlogPostService _blogPostService;

@@ -9,7 +9,7 @@ namespace PastirmaApi.API.Controllers
 {
     // Controllers/CategoriesController.cs
     [ApiController]
-    [Route("api/[controller]")]
+    [Route("api/category")]
     public class CategoriesController : ControllerBase
     {
         private readonly ICategoryService _categoryService;

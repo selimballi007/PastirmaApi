@@ -5,7 +5,7 @@ using PastirmaApi.Application.Interfaces.Services;
 
 namespace PastirmaApi.API.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("api/cloudinary")]
     [ApiController]
     [Authorize(Roles = "Admin")] // Only admins can manage Cloudinary images
     public class CloudinaryController : ControllerBase
@@ -80,7 +80,11 @@ namespace PastirmaApi.API.Controllers
                     return BadRequest(new { message = "Public ID is required" });
                 }
 
-                var result = await _cloudinaryService.DeleteImageAsync(publicId, updateDatabase);
+                // Decode URL-encoded publicId (e.g., "products%2Fimage" -> "products/image")
+                var decodedPublicId = Uri.UnescapeDataString(publicId);
+                _logger.LogInformation("Deleting image - Original: {Original}, Decoded: {Decoded}", publicId, decodedPublicId);
+
+                var result = await _cloudinaryService.DeleteImageAsync(decodedPublicId, updateDatabase);
 
                 if (result.Success)
                 {

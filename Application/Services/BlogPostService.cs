@@ -30,7 +30,9 @@ namespace PastirmaApi.Application.Services
                     ImageUrl = dto.ImageUrl,
                     CategoryId = dto.CategoryId,
                     AuthorId = userId,
-                    PublishedDate = dto.PublishedDate,
+                    PublishedDate = dto.PublishedDate.HasValue
+                        ? DateTime.SpecifyKind(dto.PublishedDate.Value, DateTimeKind.Utc)
+                        : null,
                     IsFeatured = dto.IsFeatured,
                     ReadTime = CalculateReadTime(dto.Content),
                     ViewCount = 0
@@ -65,7 +67,9 @@ namespace PastirmaApi.Application.Services
                 post.Excerpt = dto.Excerpt;
                 post.ImageUrl = dto.ImageUrl;
                 post.CategoryId = dto.CategoryId;
-                post.PublishedDate = dto.PublishedDate;
+                post.PublishedDate = dto.PublishedDate.HasValue
+                    ? DateTime.SpecifyKind(dto.PublishedDate.Value, DateTimeKind.Utc)
+                    : null;
                 post.IsFeatured = dto.IsFeatured;
                 post.ReadTime = CalculateReadTime(dto.Content);
 

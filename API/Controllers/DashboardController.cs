@@ -5,10 +5,11 @@ using PastirmaApi.Application.DTOs.DashboardDTOs;
 using PastirmaApi.Application.DTOs.OrderDTOs;
 using PastirmaApi.Application.Interfaces.Services;
 using PastirmaApi.Core.Exceptions;
+using System.Security.Claims;
 
 namespace PastirmaApi.API.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("api/dashboard")]
     [ApiController]
     [Authorize]
     public class DashboardController : ControllerBase
@@ -70,10 +71,6 @@ namespace PastirmaApi.API.Controllers
                     return BadRequest(new { message = "Limit 1 ile 100 arasında olmalıdır." });
                 }
 
-                var userId = User.FindFirst("UserId")?.Value;
-                if (userId == null)
-                    throw new BusinessException("Kullanıcı bulunamadı");
-
                 var orders = await _dashboardService.GetRecentOrdersAsync(limit);
                 return Ok(orders);
             }
@@ -97,7 +94,7 @@ namespace PastirmaApi.API.Controllers
                     return BadRequest(new { message = "Period 'week', 'month' veya 'year' olmalıdır." });
                 }
 
-                var userId = User.FindFirst("UserId")?.Value;
+                var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
                 if (userId == null)
                     throw new BusinessException("Kullanıcı bulunamadı");
 
@@ -119,7 +116,7 @@ namespace PastirmaApi.API.Controllers
         {
             try
             {
-                var userId = User.FindFirst("UserId")?.Value;
+                var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
                 if (userId == null)
                     throw new BusinessException("Kullanıcı bulunamadı");
 
@@ -141,7 +138,7 @@ namespace PastirmaApi.API.Controllers
         {
             try
             {
-                var userId = User.FindFirst("UserId")?.Value;
+                var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
                 if (userId == null)
                     throw new BusinessException("Kullanıcı bulunamadı");
 
@@ -163,7 +160,7 @@ namespace PastirmaApi.API.Controllers
         {
             try
             {
-                var userId = User.FindFirst("UserId")?.Value;
+                var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
                 if (userId == null)
                     throw new BusinessException("Kullanıcı bulunamadı");
 

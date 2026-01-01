@@ -1,4 +1,5 @@
-﻿using PastirmaApi.Application.DTOs.UserDTOs;
+﻿using PastirmaApi.Application.DTOs.ReviewDTOs;
+using PastirmaApi.Application.DTOs.UserDTOs;
 using PastirmaApi.Core.Entities;
 
 namespace PastirmaApi.Application.Interfaces.Repositories
@@ -16,5 +17,9 @@ namespace PastirmaApi.Application.Interfaces.Repositories
         Task UpdatePasswordAsync(int userId, string passwordHash);
         Task<UserRefreshTokenProjection?> GetByRefreshTokenAsync(string refreshToken, int userId);
         Task<LoginGetUserDTO?> GetAndUpdateLoginAsync(string email, string refreshToken, DateTime refreshTokenExpiry);
+        Task<PagedResult<CustomerDTO>> GetAllCustomersAsync(int page, int pageSize);
+        Task<UserProfileDTO?> GetUserProfileByIdAsync(int userId);
+        Task<User?> GetUserByIdAsync(int userId);
+        Task UpdateUserProfileAsync(int userId, string username, string? fullName);
     }
 }

@@ -8,7 +8,7 @@ using PastirmaApi.Core.Exceptions;
 namespace PastirmaApi.API.Controllers
 {
     [ApiController]
-    [Route("api/[controller]")]
+    [Route("api/hero-slide")]
     public class HeroSlideController : ControllerBase
     {
         private readonly IHeroSlideService _heroSlideService;

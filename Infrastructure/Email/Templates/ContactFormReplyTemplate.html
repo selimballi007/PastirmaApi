@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .header {
+            background-color: #ea580c;
+            color: white;
+            padding: 20px;
+            text-align: center;
+            border-radius: 5px 5px 0 0;
+        }
+        .content {
+            background-color: #f9f9f9;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 0 0 5px 5px;
+        }
+        .greeting {
+            margin-bottom: 20px;
+            font-size: 16px;
+        }
+        .message-box {
+            background-color: white;
+            padding: 15px;
+            border-left: 3px solid #ea580c;
+            margin: 20px 0;
+            white-space: pre-wrap;
+        }
+        .original-message {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #ddd;
+        }
+        .original-message-label {
+            font-weight: bold;
+            color: #666;
+            margin-bottom: 10px;
+        }
+        .original-message-content {
+            background-color: #f5f5f5;
+            padding: 15px;
+            border-left: 3px solid #999;
+            color: #666;
+            white-space: pre-wrap;
+        }
+        .footer {
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid #ddd;
+            font-size: 12px;
+            color: #999;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h2>Pastırma Adası</h2>
+        <p>Mesajınıza Yanıt</p>
+    </div>
+
+    <div class="content">
+        <div class="greeting">
+            Sayın {{RecipientName}},
+        </div>
+
+        <p>Bize gönderdiğiniz mesaj için teşekkür ederiz. Mesajınıza yanıt:</p>
+
+        <div class="message-box">{{Message}}</div>
+
+        <div class="original-message">
+            <div class="original-message-label">Orijinal Mesajınız:</div>
+            <div class="original-message-content">{{OriginalMessage}}</div>
+        </div>
+
+        <p style="margin-top: 20px;">
+            Herhangi bir sorunuz veya ek bilgiye ihtiyacınız olursa, lütfen bizimle iletişime geçmekten çekinmeyin.
+        </p>
+
+        <p>
+            <strong>İyi günler dileriz,</strong><br>
+            Pastırma Adası Ekibi
+        </p>
+    </div>
+
+    <div class="footer">
+        <p>Bu e-posta Pastırma Adası tarafından gönderilmiştir.</p>
+        <p>{{Date}}</p>
+    </div>
+</body>
+</html>

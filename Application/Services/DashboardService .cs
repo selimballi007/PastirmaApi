@@ -1,5 +1,6 @@
-﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
+using PastirmaApi.Application.DTOs.AddressDTOs;
 using PastirmaApi.Application.DTOs.DashboardDTOs;
 using PastirmaApi.Application.DTOs.OrderDTOs;
 using PastirmaApi.Application.Interfaces.Services;
@@ -45,7 +46,7 @@ namespace PastirmaApi.Application.Services
             var thirtyDaysAgo = now.AddDays(-30);
             var sixtyDaysAgo = now.AddDays(-60);
 
-            // Bu ay ve geçen ayın verilerini al
+            // Bu ay ve ge�en ay�n verilerini al
             var currentPeriodOrders = await _context.Orders
                 .Where(o => o.CreatedDate >= thirtyDaysAgo && o.CreatedDate <= now)
                 .ToListAsync();
@@ -54,19 +55,19 @@ namespace PastirmaApi.Application.Services
                 .Where(o => o.CreatedDate >= sixtyDaysAgo && o.CreatedDate < thirtyDaysAgo)
                 .ToListAsync();
 
-            // İstatistikleri hesapla
+            // �statistikleri hesapla
             var totalSales = currentPeriodOrders
-                .Where(o => o.Status == OrderStatus.Completed)
-                .Sum(o => o.Amount);
+                .Where(o => o.Status == OrderStatus.Delivered)
+                .Sum(o => o.TotalAmount);
 
             var previousSales = previousPeriodOrders
-                .Where(o => o.Status == OrderStatus.Completed)
-                .Sum(o => o.Amount);
+                .Where(o => o.Status == OrderStatus.Delivered)
+                .Sum(o => o.TotalAmount);
 
             var totalOrders = currentPeriodOrders.Count;
             var previousOrders = previousPeriodOrders.Count;
 
-            // Müşteri sayısı
+            // M��teri say�s�
             var totalCustomers = await _context.Users
                 .Where(u => u.Role == UserRole.Customer)
                 .CountAsync();
@@ -75,7 +76,7 @@ namespace PastirmaApi.Application.Services
                 .Where(u => u.Role == UserRole.Customer && u.CreatedDate < thirtyDaysAgo)
                 .CountAsync();
 
-            // Ürün sayısı
+            // �r�n say�s�
             var totalProducts = await _context.Products.CountAsync();
             var previousProducts = await _context.Products
                 .Where(p => p.CreatedDate < thirtyDaysAgo)
@@ -100,6 +101,7 @@ namespace PastirmaApi.Application.Services
                 .Include(o => o.User)
                 .Include(o => o.OrderItems)
                     .ThenInclude(oi => oi.Product)
+                .Include(o => o.ShippingAddress)
                 .OrderByDescending(o => o.CreatedDate)
                 .Take(limit)
                 .ToListAsync();
@@ -109,16 +111,22 @@ namespace PastirmaApi.Application.Services
                 Id = o.Id,
                 OrderNumber = o.OrderNumber,
                 UserId = o.UserId,
-                UserName = o.User.FullName,
-                UserEmail = o.User.Email,
-                // İlk ürün ismini al (sipariş birden fazla ürün içerebilir)
-                ProductId = o.OrderItems.FirstOrDefault()?.ProductId,
-                ProductName = o.OrderItems.FirstOrDefault()?.Product.Name ?? "",
-                Quantity = o.OrderItems.Sum(oi => oi.Quantity),
-                Amount = o.Amount,
-                Status = o.Status,
-                CreatedAt = o.CreatedDate,
-                UpdatedAt = o.UpdatedDate ?? o.CreatedDate
+                UserName = o.User?.FullName ?? o.BillingAddress?.FullName ?? o.ShippingAddress?.FullName ?? o.GuestName,
+                UserEmail = o.User?.Email ?? o.BillingAddress?.FullName ?? o.ShippingAddress?.FullName ?? o.GuestEmail,
+                GuestName = o.GuestName,
+                GuestEmail = o.GuestEmail,
+                GuestPhone = o.GuestPhone,
+                OrderItems = new List<OrderItemDTO>(),
+                SubTotal = o.SubTotal,
+                ShippingCost = o.ShippingCost,
+                TotalAmount = o.TotalAmount,
+                PaymentMethod = o.PaymentMethod,
+                PaymentStatus = o.PaymentStatus,
+                OrderStatus = o.Status,
+                Notes = o.Notes,
+                AdminNotes = o.AdminNotes,
+                CreatedDate = o.CreatedDate,
+                UpdatedDate = o.UpdatedDate
             }).ToList();
         }
 
@@ -128,7 +136,7 @@ namespace PastirmaApi.Application.Services
             DateTime startDate;
             int dataPoints;
 
-            // Period'a göre tarih aralığı belirle
+            // Period'a g�re tarih aral��� belirle
             switch (period.ToLower())
             {
                 case "week":
@@ -147,14 +155,14 @@ namespace PastirmaApi.Application.Services
             }
 
             var orders = await _context.Orders
-                .Where(o => o.CreatedDate >= startDate && o.Status == OrderStatus.Completed)
+                .Where(o => o.CreatedDate >= startDate && o.Status == OrderStatus.Delivered)
                 .ToListAsync();
 
             var salesData = new List<SalesDataPoint>();
 
             if (period.ToLower() == "week")
             {
-                // Günlük veri
+                // G�nl�k veri
                 for (int i = 0; i < dataPoints; i++)
                 {
                     var date = startDate.AddDays(i);
@@ -163,14 +171,14 @@ namespace PastirmaApi.Application.Services
                     salesData.Add(new SalesDataPoint
                     {
                         Date = date.ToString("yyyy-MM-dd"),
-                        Sales = dayOrders.Sum(o => o.Amount),
+                        Sales = dayOrders.Sum(o => o.TotalAmount),
                         Orders = dayOrders.Count()
                     });
                 }
             }
             else
             {
-                // Aylık veri
+                // Ayl�k veri
                 for (int i = 0; i < dataPoints; i++)
                 {
                     var date = startDate.AddMonths(i);
@@ -181,7 +189,7 @@ namespace PastirmaApi.Application.Services
                     salesData.Add(new SalesDataPoint
                     {
                         Date = date.ToString("yyyy-MM-01"),
-                        Sales = monthOrders.Sum(o => o.Amount),
+                        Sales = monthOrders.Sum(o => o.TotalAmount),
                         Orders = monthOrders.Count()
                     });
                 }
@@ -195,31 +203,31 @@ namespace PastirmaApi.Application.Services
             var now = DateTime.UtcNow;
             var thirtyDaysAgo = now.AddDays(-30);
 
-            // Son 30 günün verileri
+            // Son 30 g�n�n verileri
             var recentOrders = await _context.Orders
                 .Where(o => o.CreatedDate >= thirtyDaysAgo)
                 .ToListAsync();
 
-            // Site ziyaretçi sayısı (varsayımsal, gerçek uygulamada analytics'ten gelecek)
+            // Site ziyaret�i say�s� (varsay�msal, ger�ek uygulamada analytics'ten gelecek)
             var visitors = 10000; // Placeholder
 
-            // Dönüşüm oranı: (Tamamlanan sipariş / Toplam ziyaretçi) * 100
-            var completedOrders = recentOrders.Count(o => o.Status == OrderStatus.Completed);
+            // D�n���m oran�: (Tamamlanan sipari� / Toplam ziyaret�i) * 100
+            var completedOrders = recentOrders.Count(o => o.Status == OrderStatus.Delivered);
             var conversionRate = visitors > 0 ? (double)completedOrders / visitors * 100 : 0;
 
-            // Ortalama sipariş değeri
+            // Ortalama sipari� de�eri
             var averageOrderValue = completedOrders > 0
-                ? recentOrders.Where(o => o.Status == OrderStatus.Completed).Average(o => o.Amount)
+                ? recentOrders.Where(o => o.Status == OrderStatus.Delivered).Average(o => o.TotalAmount)
                 : 0;
 
-            // Aktif kullanıcılar (son 30 günde sipariş veren)
+            // Aktif kullan�c�lar (son 30 g�nde sipari� veren)
             var activeUsers = await _context.Orders
                 .Where(o => o.CreatedDate >= thirtyDaysAgo)
                 .Select(o => o.UserId)
                 .Distinct()
                 .CountAsync();
 
-            // Düşük stoklu ürünler (stok < 10)
+            // D���k stoklu �r�nler (stok < 10)
             var lowStockProducts = await _context.Products
                 .Where(p => p.Stock < 10)
                 .CountAsync();
@@ -235,8 +243,8 @@ namespace PastirmaApi.Application.Services
 
         public async Task<int> GetNotificationCountAsync()
         {
-            // Okunmamış bildirim sayısı
-            // Bu kısım notification sisteminize göre değişecek
+            // Okunmam�� bildirim say�s�
+            // Bu k�s�m notification sisteminize g�re de�i�ecek
             return await _context.Notifications
                 .Where(n => !n.IsRead)
                 .CountAsync();
@@ -244,7 +252,7 @@ namespace PastirmaApi.Application.Services
 
         public async Task<object> GetLowStockAlertsAsync()
         {
-            // Düşük stoklu ürünleri döndür
+            // D���k stoklu �r�nleri d�nd�r
             var lowStockProducts = await _context.Products
                 .Where(p => p.Stock < 10)
                 .Select(p => new
@@ -259,7 +267,7 @@ namespace PastirmaApi.Application.Services
             return lowStockProducts;
         }
 
-        // Yüzde değişim hesaplama
+        // Y�zde de�i�im hesaplama
         private double CalculatePercentageChange(decimal oldValue, decimal newValue)
         {
             if (oldValue == 0)

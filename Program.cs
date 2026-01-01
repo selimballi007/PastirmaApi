@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using PastirmaApi.API.Extensions;
+using PastirmaApi.API.Hubs;
 using PastirmaApi.Application.Interfaces.Repositories;
 using PastirmaApi.Application.Interfaces.Services;
 using PastirmaApi.Application.Services;
@@ -11,6 +12,7 @@ using PastirmaApi.Infrastructure.Data.Repositories;
 using PastirmaApi.Infrastructure.Email;
 using PastirmaApi.Infrastructure.Identity;
 using Resend;
+using System.IdentityModel.Tokens.Jwt;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -32,8 +34,25 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidateAudience = false,
             ValidAudience = builder.Configuration["Jwt:Audience"],
             ValidateLifetime = true,
-            
+
             ClockSkew = TimeSpan.Zero
+        };
+
+        // Read JWT token from cookies OR Authorization header
+        options.Events = new JwtBearerEvents
+        {
+            OnMessageReceived = context =>
+            {
+                // 1. Try to get token from cookie (for frontend)
+                var token = context.Request.Cookies["accessToken"];               
+
+                if (!string.IsNullOrEmpty(token))
+                {
+                    context.Token = token;
+                }
+
+                return Task.CompletedTask;
+            }
         };
     });
 
@@ -63,6 +82,8 @@ builder.Services.AddScoped<ICloudinaryService, CloudinaryService>();
 builder.Services.AddCaptchaServices();
 
 builder.Services.AddControllers();
+
+builder.Services.AddSignalR();
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
@@ -98,11 +119,11 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowReactApp", policy =>
     {
-        policy.WithOrigins(builder.Configuration["FrontendUrl"]!) // Next.js portu
-                .AllowAnyHeader()
-                .AllowAnyMethod()
-                .AllowCredentials()
-                .WithExposedHeaders("set-cookie");
+        policy.WithOrigins(builder.Configuration["FrontendUrl"]!)
+            .AllowAnyHeader()
+            .AllowAnyMethod()
+            .AllowCredentials()
+            .WithExposedHeaders("set-cookie");
     });
 });
 
@@ -151,6 +172,8 @@ app.UseAuthentication();
 
 app.UseAuthorization();
 
+app.MapHub<OrderHub>("/hubs/order");
+
 app.MapControllers();
-    
+
 app.Run();

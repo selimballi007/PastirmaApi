@@ -10,6 +10,7 @@ namespace PastirmaApi.Infrastructure.Data
         public DbSet<User> Users => Set<User>();
         public DbSet<Order> Orders => Set<Order>();
         public DbSet<OrderItem> OrderItems => Set<OrderItem>();
+        public DbSet<Address> Addresses => Set<Address>();
         public DbSet<Product> Products => Set<Product>();
         public DbSet<Notification> Notifications => Set<Notification>();
         public DbSet<Review> Reviews => Set<Review>();        
@@ -19,6 +20,7 @@ namespace PastirmaApi.Infrastructure.Data
         public DbSet<ProductImage> ProductImages => Set<ProductImage>();
         public DbSet<BlogPost> BlogPosts => Set<BlogPost>();
         public DbSet<BlogCategory> BlogCategories => Set<BlogCategory>();
+        public DbSet<ContactFormSubmission> ContactFormSubmissions => Set<ContactFormSubmission>();
         public override int SaveChanges()
         {
             UpdateTimeStamps();

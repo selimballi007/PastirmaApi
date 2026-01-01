@@ -1,4 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations;
 
 namespace PastirmaApi.Application.DTOs.ProductDTOs
 {
@@ -27,5 +27,7 @@ namespace PastirmaApi.Application.DTOs.ProductDTOs
         public string? ImageUrl { get; set; }
 
         public bool IsActive { get; set; }
+
+        public ICollection<ProductImageDTO>? Images { get; set; }
     }
 }

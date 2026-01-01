@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.EntityFrameworkCore;
+using PastirmaApi.Application.DTOs.ReviewDTOs;
 using PastirmaApi.Application.DTOs.UserDTOs;
 using PastirmaApi.Application.Interfaces.Repositories;
 using PastirmaApi.Application.Interfaces.Services;
@@ -273,6 +274,54 @@ namespace PastirmaApi.Application.Services
         {
             var user = await _repository.LogoutAsync(userId);
             if (user == 0) throw new BusinessException("Kullanıcı bulunamadı");
+        }
+
+        public async Task<PagedResult<CustomerDTO>> GetAllCustomersAsync(int page, int pageSize)
+        {
+            return await _repository.GetAllCustomersAsync(page, pageSize);
+        }
+
+        public async Task<UserProfileDTO> GetUserProfileAsync(int userId)
+        {
+            var profile = await _repository.GetUserProfileByIdAsync(userId);
+            if (profile == null)
+                throw new BusinessException("Kullanıcı bulunamadı");
+            return profile;
+        }
+
+        public async Task<UserProfileDTO> UpdateUserProfileAsync(int userId, UpdateProfileDTO dto)
+        {
+            var user = await _repository.GetUserByIdAsync(userId);
+            if (user == null)
+                throw new BusinessException("Kullanıcı bulunamadı");
+
+            await _repository.UpdateUserProfileAsync(userId, dto.Username, dto.FullName);
+
+            var updatedProfile = await _repository.GetUserProfileByIdAsync(userId);
+            if (updatedProfile == null)
+                throw new BusinessException("Profil güncellenemedi");
+
+            return updatedProfile;
+        }
+
+        public async Task ChangePasswordAsync(int userId, ChangePasswordDTO dto)
+        {
+            var user = await _repository.GetUserByIdAsync(userId);
+            if (user == null)
+                throw new BusinessException("Kullanıcı bulunamadı");
+
+            if (user.PasswordHash == null)
+                throw new BusinessException("Bu hesap için şifre değiştirme işlemi yapılamaz");
+
+            // Verify current password
+            if (!BCrypt.Net.BCrypt.Verify(dto.CurrentPassword, user.PasswordHash))
+                throw new BusinessException("Mevcut şifre yanlış");
+
+            // Hash new password
+            var newPasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.NewPassword, workFactor: 10);
+
+            // Update password
+            await _repository.UpdatePasswordAsync(userId, newPasswordHash);
         }
     }
 }

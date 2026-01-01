@@ -99,7 +99,19 @@ namespace PastirmaApi.Application.Services
                 _context.HeroSlides.Remove(slide);
                 await _context.SaveChangesAsync();
 
-                _logger.LogInformation("Hero slide deleted: {SlideId}, Title: {Title}",
+                // Renumber remaining slides sequentially
+                var remainingSlides = await _context.HeroSlides
+                    .OrderBy(s => s.DisplayOrder)
+                    .ToListAsync();
+
+                for (int i = 0; i < remainingSlides.Count; i++)
+                {
+                    remainingSlides[i].DisplayOrder = i + 1;
+                }
+
+                await _context.SaveChangesAsync();
+
+                _logger.LogInformation("Hero slide deleted: {SlideId}, Title: {Title}. Remaining slides renumbered.",
                     id, slide.Title);
 
                 return true;
