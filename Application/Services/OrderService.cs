@@ -1,4 +1,6 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.SignalR;
+using Microsoft.EntityFrameworkCore;
+using PastirmaApi.API.Hubs;
 using PastirmaApi.Application.DTOs.AddressDTOs;
 using PastirmaApi.Application.DTOs.DashboardDTOs;
 using PastirmaApi.Application.DTOs.OrderDTOs;
@@ -11,10 +13,12 @@ namespace PastirmaApi.Application.Services
     public class OrderService : IOrderService
     {
         private readonly ApplicationDbContext _context;
+        private readonly IHubContext<OrderHub> _hubContext;
 
-        public OrderService(ApplicationDbContext context)
+        public OrderService(ApplicationDbContext context, IHubContext<OrderHub> hubContext)
         {
             _context = context;
+            _hubContext = hubContext;
         }
 
         public async Task<PaginatedResponse<OrderDTO>> GetAllOrdersAsync(
@@ -335,6 +339,9 @@ namespace PastirmaApi.Application.Services
                 await _context.SaveChangesAsync();
 
                 await transaction.CommitAsync();
+
+                // 6. Send SignalR notification to Admin users
+                await _hubContext.Clients.Group("Admin").SendAsync("NewOrder");
 
                 // 7. Return OrderDTO
                 return await GetOrderByIdAsync(order.Id)

@@ -1,39 +1,41 @@
 using Microsoft.AspNetCore.SignalR;
+using System.Security.Claims;
 
 namespace PastirmaApi.API.Hubs
 {
     public class OrderHub : Hub
     {
-        public async Task SendOrderNotification(string message)
-        {
-            await Clients.All.SendAsync("ReceiveOrderNotification", message);
-        }
-
-        public async Task NotifyNewOrder(object orderData)
-        {
-            // Send notification to all connected admin clients
-            await Clients.All.SendAsync("NewOrderCreated", orderData);
-        }
-
-        public async Task NotifyOrderStatusChanged(int orderId, string status)
-        {
-            // Notify all clients about order status change
-            await Clients.All.SendAsync("OrderStatusChanged", new
-            {
-                orderId,
-                status,
-                timestamp = DateTime.UtcNow
-            });
-        }
+        // No public methods needed - notifications triggered from services via IHubContext
 
         public override async Task OnConnectedAsync()
         {
+            // Get user role from claims
+            var userRole = Context.User?.FindFirst(ClaimTypes.Role)?.Value;
+
+            Console.WriteLine($"Client connected: {Context.ConnectionId}, Role: {userRole ?? "Anonymous"}");
+
+            // Add to Admin group if user is an Admin
+            if (userRole == "Admin")
+            {
+                await Groups.AddToGroupAsync(Context.ConnectionId, "Admin");
+                Console.WriteLine($"Admin user added to Admin group: {Context.ConnectionId}");
+            }
+
             await base.OnConnectedAsync();
-            Console.WriteLine($"Client connected: {Context.ConnectionId}");
         }
 
         public override async Task OnDisconnectedAsync(Exception? exception)
         {
+            // Get user role from claims
+            var userRole = Context.User?.FindFirst(ClaimTypes.Role)?.Value;
+
+            // Remove from Admin group if user is an Admin
+            if (userRole == "Admin")
+            {
+                await Groups.RemoveFromGroupAsync(Context.ConnectionId, "Admin");
+                Console.WriteLine($"Admin user removed from Admin group: {Context.ConnectionId}");
+            }
+
             await base.OnDisconnectedAsync(exception);
             Console.WriteLine($"Client disconnected: {Context.ConnectionId}");
         }
