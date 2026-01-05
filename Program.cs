@@ -78,6 +78,7 @@ builder.Services.AddScoped<IBlogPostService, BlogPostService>();
 builder.Services.AddScoped<IBlogCategoryService, BlogCategoryService>();
 builder.Services.AddScoped<IHeroSlideService, HeroSlideService>();
 builder.Services.AddScoped<ICloudinaryService, CloudinaryService>();
+builder.Services.AddScoped<IAddressService, AddressService>();
 
 builder.Services.AddCaptchaServices();
 

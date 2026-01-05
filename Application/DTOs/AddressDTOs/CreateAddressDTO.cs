@@ -32,5 +32,7 @@ namespace PastirmaApi.Application.DTOs.AddressDTOs
 
         [MaxLength(500)]
         public string? Notes { get; set; }
+
+        public bool IsDefault { get; set; } = false;
     }
 }

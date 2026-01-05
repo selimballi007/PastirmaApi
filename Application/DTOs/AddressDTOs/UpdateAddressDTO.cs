@@ -1,29 +1,29 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace PastirmaApi.Core.Entities
+namespace PastirmaApi.Application.DTOs.AddressDTOs
 {
-    public class Address : BaseEntity
+    public class UpdateAddressDTO
     {
-        [Required]
+        [Required(ErrorMessage = "Ad Soyad zorunludur")]
         [MaxLength(100)]
         public string FullName { get; set; } = null!;
 
-        [Required]
+        [Required(ErrorMessage = "Telefon zorunludur")]
         [MaxLength(20)]
         public string Phone { get; set; } = null!;
 
-        [Required]
+        [Required(ErrorMessage = "Adres zorunludur")]
         [MaxLength(200)]
         public string AddressLine1 { get; set; } = null!;
 
         [MaxLength(200)]
         public string? AddressLine2 { get; set; }
 
-        [Required]
+        [Required(ErrorMessage = "İl zorunludur")]
         [MaxLength(100)]
         public string City { get; set; } = null!;
 
-        [Required]
+        [Required(ErrorMessage = "İlçe zorunludur")]
         [MaxLength(100)]
         public string District { get; set; } = null!;
 
@@ -33,11 +33,6 @@ namespace PastirmaApi.Core.Entities
         [MaxLength(500)]
         public string? Notes { get; set; }
 
-        // Optional: Link to user if they're logged in
-        public int? UserId { get; set; }
-        public User? User { get; set; }
-
-        // Is this address the default address for the user
         public bool IsDefault { get; set; } = false;
     }
 }

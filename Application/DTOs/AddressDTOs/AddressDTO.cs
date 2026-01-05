@@ -12,5 +12,6 @@ namespace PastirmaApi.Application.DTOs.AddressDTOs
         public string? PostalCode { get; set; }
         public string? Notes { get; set; }
         public int? UserId { get; set; }
+        public bool IsDefault { get; set; }
     }
 }

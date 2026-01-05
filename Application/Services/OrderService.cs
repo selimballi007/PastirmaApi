@@ -60,7 +60,7 @@ namespace PastirmaApi.Application.Services
                 GuestName = o.GuestName,
                 GuestEmail = o.GuestEmail,
                 GuestPhone = o.GuestPhone,
-                ShippingAddress = new AddressDTO
+                ShippingAddress = o.ShippingAddress != null ? new AddressDTO
                 {
                     Id = o.ShippingAddress.Id,
                     FullName = o.ShippingAddress.FullName,
@@ -70,8 +70,9 @@ namespace PastirmaApi.Application.Services
                     City = o.ShippingAddress.City,
                     District = o.ShippingAddress.District,
                     PostalCode = o.ShippingAddress.PostalCode,
-                    Notes = o.ShippingAddress.Notes
-                },
+                    Notes = o.ShippingAddress.Notes,
+                    IsDefault = o.ShippingAddress.IsDefault
+                } : null,
                 BillingAddress = o.BillingAddress != null ? new AddressDTO
                 {
                     Id = o.BillingAddress.Id,
@@ -82,7 +83,8 @@ namespace PastirmaApi.Application.Services
                     City = o.BillingAddress.City,
                     District = o.BillingAddress.District,
                     PostalCode = o.BillingAddress.PostalCode,
-                    Notes = o.BillingAddress.Notes
+                    Notes = o.BillingAddress.Notes,
+                    IsDefault = o.BillingAddress.IsDefault
                 } : null,
                 OrderItems = o.OrderItems.Select(oi => new OrderItemDTO
                 {
@@ -417,7 +419,7 @@ namespace PastirmaApi.Application.Services
                 GuestName = order.GuestName,
                 GuestEmail = order.GuestEmail,
                 GuestPhone = order.GuestPhone,
-                ShippingAddress = new AddressDTO
+                ShippingAddress = order.ShippingAddress != null ? new AddressDTO
                 {
                     Id = order.ShippingAddress.Id,
                     FullName = order.ShippingAddress.FullName,
@@ -427,8 +429,9 @@ namespace PastirmaApi.Application.Services
                     City = order.ShippingAddress.City,
                     District = order.ShippingAddress.District,
                     PostalCode = order.ShippingAddress.PostalCode,
-                    Notes = order.ShippingAddress.Notes
-                },
+                    Notes = order.ShippingAddress.Notes,
+                    IsDefault = order.ShippingAddress.IsDefault
+                } : null,
                 BillingAddress = order.BillingAddress != null ? new AddressDTO
                 {
                     Id = order.BillingAddress.Id,
@@ -439,7 +442,8 @@ namespace PastirmaApi.Application.Services
                     City = order.BillingAddress.City,
                     District = order.BillingAddress.District,
                     PostalCode = order.BillingAddress.PostalCode,
-                    Notes = order.BillingAddress.Notes
+                    Notes = order.BillingAddress.Notes,
+                    IsDefault = order.BillingAddress.IsDefault
                 } : null,
                 OrderItems = order.OrderItems.Select(oi => new OrderItemDTO
                 {
