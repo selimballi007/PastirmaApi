@@ -126,8 +126,11 @@ namespace PastirmaApi.Application.Services
         {
             var query = _context.Orders
                 .Include(o => o.User)
+                .Include(o => o.ShippingAddress)
+                .Include(o => o.BillingAddress)
                 .Include(o => o.OrderItems)
                     .ThenInclude(oi => oi.Product)
+                .Where(o => o.UserId.ToString() == userId)
                 .AsQueryable();
 
             // Status filtresi
@@ -155,8 +158,42 @@ namespace PastirmaApi.Application.Services
                 GuestName = o.GuestName,
                 GuestEmail = o.GuestEmail,
                 GuestPhone = o.GuestPhone,
-                ShippingAddress = null!, // Will be loaded separately
-                OrderItems = new List<OrderItemDTO>(),
+                ShippingAddress = o.ShippingAddress != null ? new AddressDTO
+                {
+                    Id = o.ShippingAddress.Id,
+                    FullName = o.ShippingAddress.FullName,
+                    Phone = o.ShippingAddress.Phone,
+                    AddressLine1 = o.ShippingAddress.AddressLine1,
+                    AddressLine2 = o.ShippingAddress.AddressLine2,
+                    City = o.ShippingAddress.City,
+                    District = o.ShippingAddress.District,
+                    PostalCode = o.ShippingAddress.PostalCode,
+                    Notes = o.ShippingAddress.Notes,
+                    IsDefault = o.ShippingAddress.IsDefault
+                } : null,
+                BillingAddress = o.BillingAddress != null ? new AddressDTO
+                {
+                    Id = o.BillingAddress.Id,
+                    FullName = o.BillingAddress.FullName,
+                    Phone = o.BillingAddress.Phone,
+                    AddressLine1 = o.BillingAddress.AddressLine1,
+                    AddressLine2 = o.BillingAddress.AddressLine2,
+                    City = o.BillingAddress.City,
+                    District = o.BillingAddress.District,
+                    PostalCode = o.BillingAddress.PostalCode,
+                    Notes = o.BillingAddress.Notes,
+                    IsDefault = o.BillingAddress.IsDefault
+                } : null,
+                OrderItems = o.OrderItems.Select(oi => new OrderItemDTO
+                {
+                    Id = oi.Id,
+                    ProductId = oi.ProductId,
+                    ProductName = oi.Product.Name,
+                    ProductImageUrl = oi.Product.ImageUrl,
+                    Quantity = oi.Quantity,
+                    UnitPrice = oi.UnitPrice,
+                    TotalPrice = oi.TotalPrice
+                }).ToList(),
                 SubTotal = o.SubTotal,
                 ShippingCost = o.ShippingCost,
                 TotalAmount = o.TotalAmount,
@@ -183,9 +220,11 @@ namespace PastirmaApi.Application.Services
         {
             var order = await _context.Orders
                 .Include(o => o.User)
+                .Include(o => o.ShippingAddress)
+                .Include(o => o.BillingAddress)
                 .Include(o => o.OrderItems)
                     .ThenInclude(oi => oi.Product)
-                .FirstOrDefaultAsync(o => o.Id.ToString() == orderId);
+                .FirstOrDefaultAsync(o => o.Id.ToString() == orderId && o.UserId.ToString() == userId);
 
             if (order == null)
                 return null;
@@ -200,8 +239,42 @@ namespace PastirmaApi.Application.Services
                 GuestName = order.GuestName,
                 GuestEmail = order.GuestEmail,
                 GuestPhone = order.GuestPhone,
-                ShippingAddress = null!, // Will be loaded separately
-                OrderItems = new List<OrderItemDTO>(),
+                ShippingAddress = order.ShippingAddress != null ? new AddressDTO
+                {
+                    Id = order.ShippingAddress.Id,
+                    FullName = order.ShippingAddress.FullName,
+                    Phone = order.ShippingAddress.Phone,
+                    AddressLine1 = order.ShippingAddress.AddressLine1,
+                    AddressLine2 = order.ShippingAddress.AddressLine2,
+                    City = order.ShippingAddress.City,
+                    District = order.ShippingAddress.District,
+                    PostalCode = order.ShippingAddress.PostalCode,
+                    Notes = order.ShippingAddress.Notes,
+                    IsDefault = order.ShippingAddress.IsDefault
+                } : null,
+                BillingAddress = order.BillingAddress != null ? new AddressDTO
+                {
+                    Id = order.BillingAddress.Id,
+                    FullName = order.BillingAddress.FullName,
+                    Phone = order.BillingAddress.Phone,
+                    AddressLine1 = order.BillingAddress.AddressLine1,
+                    AddressLine2 = order.BillingAddress.AddressLine2,
+                    City = order.BillingAddress.City,
+                    District = order.BillingAddress.District,
+                    PostalCode = order.BillingAddress.PostalCode,
+                    Notes = order.BillingAddress.Notes,
+                    IsDefault = order.BillingAddress.IsDefault
+                } : null,
+                OrderItems = order.OrderItems.Select(oi => new OrderItemDTO
+                {
+                    Id = oi.Id,
+                    ProductId = oi.ProductId,
+                    ProductName = oi.Product.Name,
+                    ProductImageUrl = oi.Product.ImageUrl,
+                    Quantity = oi.Quantity,
+                    UnitPrice = oi.UnitPrice,
+                    TotalPrice = oi.TotalPrice
+                }).ToList(),
                 SubTotal = order.SubTotal,
                 ShippingCost = order.ShippingCost,
                 TotalAmount = order.TotalAmount,
