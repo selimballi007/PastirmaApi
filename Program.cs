@@ -116,11 +116,15 @@ builder.Services.AddSwaggerGen(options =>
     options.SwaggerDoc("v1", new() { Title = "JwtAuth Development", Version = "v1" });
 });
 
+// Read CORS origins from configuration
+var allowedOrigins = builder.Configuration.GetSection("CorsSettings:AllowedOrigins").Get<string[]>()
+    ?? throw new InvalidOperationException("CorsSettings:AllowedOrigins is not configured");
+
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowReactApp", policy =>
     {
-        policy.WithOrigins(builder.Configuration["FrontendUrl"]!)
+        policy.WithOrigins(allowedOrigins)
             .AllowAnyHeader()
             .AllowAnyMethod()
             .AllowCredentials()

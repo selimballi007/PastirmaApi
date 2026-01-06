@@ -13,10 +13,12 @@ namespace PastirmaApi.API.Controllers
     public class UserController:ControllerBase
     {
         private readonly IUserService _userService;
+        private readonly IConfiguration _configuration;
 
-        public UserController( IUserService userService)
+        public UserController(IUserService userService, IConfiguration configuration)
         {
             _userService = userService;
+            _configuration = configuration;
         }
 
         [HttpPost("register")]
@@ -261,11 +263,14 @@ namespace PastirmaApi.API.Controllers
 
             var env = HttpContext.RequestServices.GetRequiredService<IWebHostEnvironment>();
 
-            // Put the access token in the cookie (15 minutes expiry)
+            // Read access token expiration from configuration (single source of truth)
+            var accessTokenExpiresMinutes = _configuration.GetValue<int>("Jwt:AccessTokenExpiresMinutes");
+
+            // Put the access token in the cookie (matches JWT expiry from configuration)
             var cookieOptions = new CookieOptions
             {
                 HttpOnly = true, // JS inaccessible → secure
-                Expires = DateTimeOffset.UtcNow.AddMinutes(15), // Match JWT expiry
+                Expires = DateTimeOffset.UtcNow.AddMinutes(accessTokenExpiresMinutes), // Match JWT expiry
                 Path = "/"
             };
             if (env.IsDevelopment())

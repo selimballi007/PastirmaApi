@@ -27,7 +27,6 @@ namespace PastirmaApi.Infrastructure.Identity
             var claims = new[]
             {
                 new Claim(JwtRegisteredClaimNames.Sub, userDto.Id.ToString()),  // Auto-mapped to ClaimTypes.NameIdentifier
-                new Claim(ClaimTypes.Name, userDto.Username!),
                 new Claim(JwtRegisteredClaimNames.Email, userDto.Email),
                 new Claim(ClaimTypes.Role, userDto.Role.ToString())
             };

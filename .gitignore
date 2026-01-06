@@ -48,3 +48,6 @@ desktop.ini
 # User secrets
 **/secrets.json
 /nul
+/appsettings.Development.json
+/appsettings.json
+/appsettings.Template.json
