@@ -282,16 +282,18 @@ namespace PastirmaApi.API.Controllers
             };
             if (env.IsDevelopment())
             {
-                // Development: Use Lax for localhost, None for IP-based access
+                // Development (localhost): Use Lax for localhost testing
                 // Note: SameSite=None requires Secure=true (HTTPS), but we're using HTTP in dev
                 // So we use Lax which works for same-site (localhost) and is more compatible
                 cookieOptions.Secure = false;
-                cookieOptions.SameSite = SameSiteMode.Lax; // Lax works for localhost, compatible with HTTP
+                cookieOptions.SameSite = SameSiteMode.Lax;
             }
             else
             {
-                cookieOptions.Secure = true; // Only works on HTTPS
-                cookieOptions.SameSite = SameSiteMode.Strict; // Protects against CSRF
+                // Production & Staging (test): Use strict secure settings
+                // Requires same-domain architecture (Option A) for cookies to work
+                cookieOptions.Secure = true; // HTTPS only
+                cookieOptions.SameSite = SameSiteMode.Strict; // Maximum CSRF protection
             }
 
             Response.Cookies.Append("accessToken", accessToken, cookieOptions);
@@ -315,16 +317,18 @@ namespace PastirmaApi.API.Controllers
             };
             if (env.IsDevelopment())
             {
-                // Development: Use Lax for localhost, None for IP-based access
+                // Development (localhost): Use Lax for localhost testing
                 // Note: SameSite=None requires Secure=true (HTTPS), but we're using HTTP in dev
                 // So we use Lax which works for same-site (localhost) and is more compatible
                 cookieOptions.Secure = false;
-                cookieOptions.SameSite = SameSiteMode.Lax; // Lax works for localhost, compatible with HTTP
+                cookieOptions.SameSite = SameSiteMode.Lax;
             }
             else
             {
-                cookieOptions.Secure = true; // Only works on HTTPS
-                cookieOptions.SameSite = SameSiteMode.Strict; // Protects against CSRF
+                // Production & Staging (test): Use strict secure settings
+                // Requires same-domain architecture (Option A) for cookies to work
+                cookieOptions.Secure = true; // HTTPS only
+                cookieOptions.SameSite = SameSiteMode.Strict; // Maximum CSRF protection
             }
 
             Response.Cookies.Append("refreshToken", refreshToken, cookieOptions);
