@@ -64,16 +64,18 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 
-// DEBUG: Log connection string info (temporary - remove after fixing)
-Console.WriteLine($"[DEBUG] Connection string is null: {connectionString == null}");
-Console.WriteLine($"[DEBUG] Connection string is empty: {string.IsNullOrEmpty(connectionString)}");
-Console.WriteLine($"[DEBUG] Connection string length: {connectionString?.Length ?? 0}");
-Console.WriteLine($"[DEBUG] Connection string FULL VALUE: {connectionString}");
-Console.WriteLine($"[DEBUG] First char code: {(connectionString?.Length > 0 ? ((int)connectionString[0]).ToString() : "N/A")}");
-Console.WriteLine($"[DEBUG] Starts with 'postgresql://': {connectionString?.StartsWith("postgresql://") ?? false}");
-
 if (string.IsNullOrEmpty(connectionString))
     throw new InvalidOperationException("Connection string is not configured");
+
+// Convert PostgreSQL URL to Entity Framework format if needed
+if (connectionString.StartsWith("postgresql://") || connectionString.StartsWith("postgres://"))
+{
+    Console.WriteLine("[INFO] Converting PostgreSQL URL to EF connection string format...");
+    var uri = new Uri(connectionString.Replace("postgresql://", "postgres://"));
+    var userInfo = uri.UserInfo.Split(':');
+    connectionString = $"Host={uri.Host};Port={uri.Port};Database={uri.AbsolutePath.TrimStart('/')};Username={userInfo[0]};Password={userInfo[1]};SSL Mode=Require;Trust Server Certificate=true";
+    Console.WriteLine($"[INFO] Converted connection string (password hidden): Host={uri.Host};Port={uri.Port};Database={uri.AbsolutePath.TrimStart('/')};Username={userInfo[0]};Password=***");
+}
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseNpgsql(connectionString));
