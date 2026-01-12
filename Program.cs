@@ -19,6 +19,10 @@ using System.Threading.RateLimiting;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Railway provides PORT environment variable
+var port = Environment.GetEnvironmentVariable("PORT") ?? "5296";
+builder.WebHost.UseUrls($"http://0.0.0.0:{port}");
+
 var jwtKey = builder.Configuration["Jwt:Key"];
 var keyBytes = Encoding.UTF8.GetBytes(jwtKey!);
 
