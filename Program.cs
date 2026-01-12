@@ -68,7 +68,9 @@ var connectionString = builder.Configuration.GetConnectionString("DefaultConnect
 Console.WriteLine($"[DEBUG] Connection string is null: {connectionString == null}");
 Console.WriteLine($"[DEBUG] Connection string is empty: {string.IsNullOrEmpty(connectionString)}");
 Console.WriteLine($"[DEBUG] Connection string length: {connectionString?.Length ?? 0}");
-Console.WriteLine($"[DEBUG] Connection string first 20 chars: {(connectionString?.Length > 20 ? connectionString.Substring(0, 20) : connectionString ?? "NULL")}");
+Console.WriteLine($"[DEBUG] Connection string FULL VALUE: {connectionString}");
+Console.WriteLine($"[DEBUG] First char code: {(connectionString?.Length > 0 ? ((int)connectionString[0]).ToString() : "N/A")}");
+Console.WriteLine($"[DEBUG] Starts with 'postgresql://': {connectionString?.StartsWith("postgresql://") ?? false}");
 
 if (string.IsNullOrEmpty(connectionString))
     throw new InvalidOperationException("Connection string is not configured");
