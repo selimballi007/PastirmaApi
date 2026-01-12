@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using PastirmaApi.Application.DTOs.UserDTOs;
 using PastirmaApi.Application.Interfaces.Services;
 using PastirmaApi.Core.Exceptions;
@@ -22,6 +23,7 @@ namespace PastirmaApi.API.Controllers
         }
 
         [HttpPost("register")]
+        [EnableRateLimiting("auth")]
         public async Task<IActionResult> Register([FromBody] RegisterUserDTO dto) 
         {
             await _userService.RegisterUserAsync(dto);
@@ -29,6 +31,7 @@ namespace PastirmaApi.API.Controllers
         }
 
         [HttpPost("login")]
+        [EnableRateLimiting("auth")]
         public async Task<IActionResult> Login([FromBody] LoginRequestDTO dto)
         {
             var controllerStopWatch = Stopwatch.StartNew();
@@ -55,6 +58,7 @@ namespace PastirmaApi.API.Controllers
         }
 
         [HttpPost("resend-verification-byt")]
+        [EnableRateLimiting("auth")]
         public async Task<IActionResult> ResendVerificationByToken([FromBody] ResendVerificationByTokenDTO dto)
         {
             await _userService.ResendVerificationByTokenAsync(dto.Token);
@@ -62,6 +66,7 @@ namespace PastirmaApi.API.Controllers
         }
 
         [HttpPost("resend-verification-bye")]
+        [EnableRateLimiting("auth")]
         public async Task<IActionResult> ResendVerificationByEmail([FromBody] ResendVerificationByEmailDTO dto)
         {
             await _userService.ResendVerificationByEmailAsync(dto.Email);
@@ -69,6 +74,7 @@ namespace PastirmaApi.API.Controllers
         }
 
         [HttpPost("forgot-password")]
+        [EnableRateLimiting("auth")]
         public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordDTO dto)
         {
             await _userService.ForgotPasswordAsync(dto.Email);
@@ -76,6 +82,7 @@ namespace PastirmaApi.API.Controllers
         }
 
         [HttpPost("reset-password")]
+        [EnableRateLimiting("auth")]
         public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordDTO dto)
         {
             await _userService.ResetPasswordAsync(dto);

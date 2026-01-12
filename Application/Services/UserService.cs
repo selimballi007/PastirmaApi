@@ -146,6 +146,16 @@ namespace PastirmaApi.Application.Services
             if (user == null)
                 throw new BusinessException("Kullanıcı bulunamadı");
 
+            // ===== 3.1. ACCOUNT LOCKOUT CHECK (security: prevent brute force) =====
+            if (user.LockoutEnd.HasValue && user.LockoutEnd > DateTime.UtcNow)
+            {
+                var remainingMinutes = (int)(user.LockoutEnd.Value - DateTime.UtcNow).TotalMinutes;
+                throw new BusinessException(
+                    $"Hesap kilitli. {remainingMinutes} dakika sonra tekrar deneyin.",
+                    StatusCodes.Status429TooManyRequests
+                );
+            }
+
             if (!user.IsVerified)
                 throw new BusinessException(
                     "Email hesabı aktif edilmemiş.",
@@ -155,8 +165,31 @@ namespace PastirmaApi.Application.Services
             // ===== 4. PASSWORD VERIFY =====
             var verifyStopwatch = Stopwatch.StartNew();
             if (!BCrypt.Net.BCrypt.Verify(dto.PasswordHash, user.PasswordHash))
-                throw new BusinessException("Şifre yanlış");
+            {
+                // Increment failed login attempts
+                var newFailedAttempts = user.FailedLoginAttempts + 1;
+
+                // Lock account after 5 failed attempts (15 minutes)
+                if (newFailedAttempts >= 5)
+                {
+                    var lockoutEnd = DateTime.UtcNow.AddMinutes(15);
+                    await _repository.UpdateUserLockoutAsync(user.Id, newFailedAttempts, lockoutEnd);
+                    throw new BusinessException(
+                        "Çok fazla başarısız giriş denemesi. Hesabınız 15 dakika kilitlendi.",
+                        StatusCodes.Status429TooManyRequests
+                    );
+                }
+
+                await _repository.UpdateUserLockoutAsync(user.Id, newFailedAttempts, null);
+                throw new BusinessException($"Şifre yanlış. Kalan deneme hakkı: {5 - newFailedAttempts}");
+            }
             verifyStopwatch.Stop();
+
+            // ===== 4.1. RESET LOCKOUT ON SUCCESSFUL LOGIN =====
+            if (user.FailedLoginAttempts > 0 || user.LockoutEnd.HasValue)
+            {
+                await _repository.UpdateUserLockoutAsync(user.Id, 0, null);
+            }
 
             // ===== 5. ACCESS TOKEN OLUŞTUR =====
             var accessTokenStopwatch = Stopwatch.StartNew();

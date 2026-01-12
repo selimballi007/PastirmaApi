@@ -12,6 +12,8 @@ namespace PastirmaApi.Application.DTOs.UserDTOs
         DateTime? LastLoginAt,
         string? RefreshToken,
         DateTime? RefreshTokenExpiry,
-        bool IsVerified
+        bool IsVerified,
+        int FailedLoginAttempts,
+        DateTime? LockoutEnd
     );
 }

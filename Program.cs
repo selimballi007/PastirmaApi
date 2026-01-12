@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
@@ -14,6 +15,7 @@ using PastirmaApi.Infrastructure.Identity;
 using Resend;
 using System.IdentityModel.Tokens.Jwt;
 using System.Text;
+using System.Threading.RateLimiting;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -140,6 +142,45 @@ builder.Services.Configure<ResendClientOptions>(o =>
 });
 builder.Services.AddTransient<IResend, ResendClient>();
 
+// Add Rate Limiting (security: prevent brute force and spam)
+builder.Services.AddRateLimiter(options =>
+{
+    // Strict limit for auth endpoints (login, register, etc.)
+    options.AddFixedWindowLimiter("auth", opt =>
+    {
+        opt.Window = TimeSpan.FromMinutes(1);
+        opt.PermitLimit = 5;  // 5 requests per minute per IP
+        opt.QueueLimit = 0;   // No queueing - reject immediately
+    });
+
+    // Medium limit for contact form (prevent spam)
+    options.AddFixedWindowLimiter("contact", opt =>
+    {
+        opt.Window = TimeSpan.FromMinutes(5);
+        opt.PermitLimit = 3;  // 3 submissions per 5 minutes per IP
+        opt.QueueLimit = 0;
+    });
+
+    // General API limit
+    options.AddFixedWindowLimiter("api", opt =>
+    {
+        opt.Window = TimeSpan.FromMinutes(1);
+        opt.PermitLimit = 100;  // 100 requests per minute per IP
+        opt.QueueLimit = 0;
+    });
+
+    // Rejection response
+    options.OnRejected = async (context, token) =>
+    {
+        context.HttpContext.Response.StatusCode = 429; // Too Many Requests
+        context.HttpContext.Response.ContentType = "application/json";
+        await context.HttpContext.Response.WriteAsJsonAsync(new
+        {
+            errors = new[] { "Çok fazla istek gönderildi. Lütfen daha sonra tekrar deneyin." }
+        }, cancellationToken: token);
+    };
+});
+
 var app = builder.Build();
 
 // --- Migrations otomatik uygulama ---
@@ -172,6 +213,9 @@ if (!app.Environment.IsDevelopment())
 }
 
 app.UseRouting();
+
+// Use rate limiting (must be before authentication/authorization)
+app.UseRateLimiter();
 
 app.UseAuthentication();
 

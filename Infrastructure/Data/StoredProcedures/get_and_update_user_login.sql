@@ -8,6 +8,8 @@
 -- Returns: Table with user information
 -- =====================================================
 
+--DROP FUNCTION get_and_update_user_login(text,text,timestamp with time zone)
+
 CREATE OR REPLACE FUNCTION public.get_and_update_user_login(
     p_email TEXT,
     p_refresh_token TEXT,
@@ -22,7 +24,9 @@ RETURNS TABLE (
     last_login_at TIMESTAMP WITH TIME ZONE,
     refresh_token TEXT,
     refresh_token_expiry TIMESTAMP WITH TIME ZONE,
-    is_verified BOOLEAN
+    is_verified BOOLEAN,
+    failed_login_attempts INTEGER,
+    lockout_end TIMESTAMP WITH TIME ZONE
 )
 LANGUAGE plpgsql
 AS $$
@@ -49,7 +53,9 @@ BEGIN
         u.last_login_at,
         u.refresh_token::TEXT,
         u.refresh_token_expiry,
-        u.is_verified
+        u.is_verified,
+        u.failed_login_attempts,
+        u.lockout_end
     FROM users u
     WHERE
         u.email = p_email

@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using PastirmaApi.Application.DTOs.ContactDTOs;
 using PastirmaApi.Application.DTOs.ReviewDTOs;
@@ -7,7 +8,6 @@ using PastirmaApi.Application.Interfaces.Services;
 using PastirmaApi.Core.Entities;
 using PastirmaApi.Infrastructure.Data;
 using PastirmaApi.Infrastructure.Email;
-using PastirmaApi.Infrastructure.GoogleCaptcha;
 
 namespace PastirmaApi.API.Controllers
 {
@@ -19,43 +19,26 @@ namespace PastirmaApi.API.Controllers
         private readonly IConfiguration _configuration;
         private readonly ILogger<ContactController> _logger;
         private readonly ApplicationDbContext _context;
-        private readonly ICaptchaService _captchaService;
 
         public ContactController(
             IEmailService emailService,
             IConfiguration configuration,
             ILogger<ContactController> logger,
-            ApplicationDbContext context,
-            ICaptchaService captchaService)
+            ApplicationDbContext context)
         {
             _emailService = emailService;
             _configuration = configuration;
             _logger = logger;
             _context = context;
-            _captchaService = captchaService;
         }
 
         [HttpPost]
+        [EnableRateLimiting("contact")]
         public async Task<IActionResult> SubmitContactForm([FromBody] ContactFormDTO dto)
         {
+            // CAPTCHA verification handled by CaptchaMiddleware
             try
             {
-                // Verify Turnstile captcha token
-                var captchaResult = await _captchaService.VerifyAsync(dto.CaptchaToken);
-
-                if (!captchaResult.Success)
-                {
-                    _logger.LogWarning(
-                        "Contact form captcha verification failed. Error codes: {ErrorCodes}",
-                        string.Join(", ", captchaResult.ErrorCodes)
-                    );
-
-                    return BadRequest(new
-                    {
-                        message = "Captcha doğrulaması başarısız oldu. Lütfen tekrar deneyin."
-                    });
-                }
-
                 // Save to database
                 var submission = new ContactFormSubmission
                 {

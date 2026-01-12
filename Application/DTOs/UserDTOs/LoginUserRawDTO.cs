@@ -13,5 +13,7 @@ namespace PastirmaApi.Application.DTOs.UserDTOs
         public string? refresh_token { get; set; }
         public DateTime? refresh_token_expiry { get; set; }
         public bool is_verified { get; set; }
+        public int failed_login_attempts { get; set; }
+        public DateTime? lockout_end { get; set; }
     }
 }

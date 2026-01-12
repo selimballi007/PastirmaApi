@@ -42,7 +42,9 @@ namespace PastirmaApi.Infrastructure.Data.Repositories
                     u.LastLoginAt,
                     u.RefreshToken,
                     u.RefreshTokenExpiry,
-                    u.IsVerified
+                    u.IsVerified,
+                    u.FailedLoginAttempts,
+                    u.LockoutEnd
                 ))
                 .AsNoTracking()
                 .FirstOrDefaultAsync();
@@ -149,7 +151,9 @@ namespace PastirmaApi.Infrastructure.Data.Repositories
             result.last_login_at,
             result.refresh_token,
             result.refresh_token_expiry,
-            result.is_verified
+            result.is_verified,
+            result.failed_login_attempts,
+            result.lockout_end
             );
         }
 
@@ -225,6 +229,16 @@ namespace PastirmaApi.Infrastructure.Data.Repositories
                 .ExecuteUpdateAsync(s => s
                     .SetProperty(u => u.Username, username)
                     .SetProperty(u => u.FullName, fullName)
+                );
+        }
+
+        public async Task UpdateUserLockoutAsync(int userId, int failedAttempts, DateTime? lockoutEnd)
+        {
+            await _context.Users
+                .Where(u => u.Id == userId)
+                .ExecuteUpdateAsync(s => s
+                    .SetProperty(u => u.FailedLoginAttempts, failedAttempts)
+                    .SetProperty(u => u.LockoutEnd, lockoutEnd)
                 );
         }
     }

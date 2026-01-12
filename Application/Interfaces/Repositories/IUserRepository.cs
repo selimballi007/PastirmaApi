@@ -21,5 +21,6 @@ namespace PastirmaApi.Application.Interfaces.Repositories
         Task<UserProfileDTO?> GetUserProfileByIdAsync(int userId);
         Task<User?> GetUserByIdAsync(int userId);
         Task UpdateUserProfileAsync(int userId, string username, string? fullName);
+        Task UpdateUserLockoutAsync(int userId, int failedAttempts, DateTime? lockoutEnd);
     }
 }

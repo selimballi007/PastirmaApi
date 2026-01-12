@@ -11,6 +11,7 @@ namespace PastirmaApi.API.Middlewares
         private readonly ICaptchaService _captchaService;
         private readonly IMemoryCache _cache;
         private readonly ILogger<CaptchaMiddleware> _logger;
+        private readonly IConfiguration _configuration;
 
         // ✅ HashSet ile O(1) lookup
         private static readonly HashSet<string> ProtectedPaths = new(StringComparer.OrdinalIgnoreCase)
@@ -21,19 +22,22 @@ namespace PastirmaApi.API.Middlewares
         "/api/user/reset-password",
         "/api/user/forgot-password",
         "/api/user/resend-verification-byt",
-        "/api/user/resend-verification-bye"
+        "/api/user/resend-verification-bye",
+        "/api/contact"
     };
 
         public CaptchaMiddleware(
             RequestDelegate next,
             ICaptchaService captchaService,
             IMemoryCache cache,
-            ILogger<CaptchaMiddleware> logger)
+            ILogger<CaptchaMiddleware> logger,
+            IConfiguration configuration)
         {
             _next = next;
             _captchaService = captchaService;
             _cache = cache;
             _logger = logger;
+            _configuration = configuration;
         }
 
         public async Task InvokeAsync(HttpContext context)
@@ -45,11 +49,11 @@ namespace PastirmaApi.API.Middlewares
                 return;
             }
 
-            // ✅ DEVELOPMENT MODE: Skip CAPTCHA for Swagger/Postman testing
-            var env = context.RequestServices.GetRequiredService<IWebHostEnvironment>();
-            if (env.IsDevelopment())
+            // ✅ FEATURE FLAG: Skip CAPTCHA if explicitly disabled (security: only use in development!)
+            var skipCaptcha = _configuration.GetValue<bool>("FeatureFlags:SkipCaptcha", false);
+            if (skipCaptcha)
             {
-                _logger.LogInformation("Development mode: Skipping CAPTCHA verification for {Path}", context.Request.Path);
+                _logger.LogWarning("⚠️ CAPTCHA VALIDATION DISABLED via feature flag! (Path: {Path})", context.Request.Path);
                 await _next(context);
                 return;
             }
