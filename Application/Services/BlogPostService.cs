@@ -59,7 +59,7 @@ namespace PastirmaApi.Application.Services
                 var post = await _context.BlogPosts.FindAsync(id);
                 if (post == null)
                 {
-                    throw new NotFoundException("Blog yazısı bulunamadı.");
+                    throw new BusinessException("Blog yazısı bulunamadı.");
                 }
 
                 post.Title = dto.Title;
@@ -93,7 +93,7 @@ namespace PastirmaApi.Application.Services
                 var post = await _context.BlogPosts.FindAsync(id);
                 if (post == null)
                 {
-                    throw new NotFoundException("Blog yazısı bulunamadı.");
+                    throw new BusinessException("Blog yazısı bulunamadı.");
                 }
 
                 _context.BlogPosts.Remove(post);
@@ -119,7 +119,7 @@ namespace PastirmaApi.Application.Services
 
             if (post == null)
             {
-                throw new NotFoundException("Blog yazısı bulunamadı.");
+                throw new BusinessException("Blog yazısı bulunamadı.");
             }
 
             if (incrementViewCount)
@@ -182,7 +182,7 @@ namespace PastirmaApi.Application.Services
                 var post = await _context.BlogPosts.FindAsync(id);
                 if (post == null)
                 {
-                    throw new NotFoundException("Blog yazısı bulunamadı.");
+                    throw new BusinessException("Blog yazısı bulunamadı.");
                 }
 
                 post.IsActive = !post.IsActive;
@@ -206,7 +206,7 @@ namespace PastirmaApi.Application.Services
                 var post = await _context.BlogPosts.FindAsync(id);
                 if (post == null)
                 {
-                    throw new NotFoundException("Blog yazısı bulunamadı.");
+                    throw new BusinessException("Blog yazısı bulunamadı.");
                 }
 
                 post.IsFeatured = !post.IsFeatured;

@@ -1,4 +1,4 @@
-ï»¿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using PastirmaApi.Application.DTOs.ReviewDTO;
@@ -42,14 +42,14 @@ namespace PastirmaApi.API.Controllers
             {
                 return BadRequest(new { message = ex.Message });
             }
-            catch (NotFoundException ex)
+            catch (BusinessException ex)
             {
                 return NotFound(new { message = ex.Message });
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error creating review");
-                return StatusCode(500, new { message = "Yorum oluÅŸturulurken bir hata oluÅŸtu." });
+                return StatusCode(500, new { message = "Yorum oluþturulurken bir hata oluþtu." });
             }
         }
 
@@ -62,14 +62,14 @@ namespace PastirmaApi.API.Controllers
                 var review = await _reviewService.GetReviewByIdAsync(id);
                 return Ok(review);
             }
-            catch (NotFoundException ex)
+            catch (BusinessException ex)
             {
                 return NotFound(new { message = ex.Message });
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error getting review: {ReviewId}", id);
-                return StatusCode(500, new { message = "Yorum getirilirken bir hata oluÅŸtu." });
+                return StatusCode(500, new { message = "Yorum getirilirken bir hata oluþtu." });
             }
         }
 
@@ -91,7 +91,7 @@ namespace PastirmaApi.API.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error getting product reviews: {ProductId}", productId);
-                return StatusCode(500, new { message = "Yorumlar getirilirken bir hata oluÅŸtu." });
+                return StatusCode(500, new { message = "Yorumlar getirilirken bir hata oluþtu." });
             }
         }
 
@@ -107,7 +107,7 @@ namespace PastirmaApi.API.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error getting product review stats: {ProductId}", productId);
-                return StatusCode(500, new { message = "Ä°statistikler getirilirken bir hata oluÅŸtu." });
+                return StatusCode(500, new { message = "Ýstatistikler getirilirken bir hata oluþtu." });
             }
         }
 
@@ -124,7 +124,7 @@ namespace PastirmaApi.API.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error getting review stats");
-                return StatusCode(500, new { message = "Ä°statistikler getirilirken bir hata oluÅŸtu." });
+                return StatusCode(500, new { message = "Ýstatistikler getirilirken bir hata oluþtu." });
             }
         }
 
@@ -145,7 +145,7 @@ namespace PastirmaApi.API.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error getting all approved reviews");
-                return StatusCode(500, new { message = "OnaylanmÄ±ÅŸ yorumlar getirilirken bir hata oluÅŸtu." });
+                return StatusCode(500, new { message = "Onaylanmýþ yorumlar getirilirken bir hata oluþtu." });
             }
         }
 
@@ -167,7 +167,7 @@ namespace PastirmaApi.API.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error getting pending reviews");
-                return StatusCode(500, new { message = "Bekleyen yorumlar getirilirken bir hata oluÅŸtu." });
+                return StatusCode(500, new { message = "Bekleyen yorumlar getirilirken bir hata oluþtu." });
             }
         }
 
@@ -190,7 +190,7 @@ namespace PastirmaApi.API.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error getting reviews by status: {Status}", status);
-                return StatusCode(500, new { message = "Yorumlar getirilirken bir hata oluÅŸtu." });
+                return StatusCode(500, new { message = "Yorumlar getirilirken bir hata oluþtu." });
             }
         }
 
@@ -205,19 +205,19 @@ namespace PastirmaApi.API.Controllers
 
                 if (result)
                 {
-                    return Ok(new { message = "Yorum onaylandÄ±." });
+                    return Ok(new { message = "Yorum onaylandý." });
                 }
 
-                return BadRequest(new { message = "Yorum onaylanamadÄ±." });
+                return BadRequest(new { message = "Yorum onaylanamadý." });
             }
-            catch (NotFoundException ex)
+            catch (BusinessException ex)
             {
                 return NotFound(new { message = ex.Message });
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error approving review: {ReviewId}", id);
-                return StatusCode(500, new { message = "Yorum onaylanÄ±rken bir hata oluÅŸtu." });
+                return StatusCode(500, new { message = "Yorum onaylanýrken bir hata oluþtu." });
             }
         }
 
@@ -237,14 +237,14 @@ namespace PastirmaApi.API.Controllers
 
                 return BadRequest(new { message = "Yorum reddedilemedi." });
             }
-            catch (NotFoundException ex)
+            catch (BusinessException ex)
             {
                 return NotFound(new { message = ex.Message });
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error rejecting review: {ReviewId}", id);
-                return StatusCode(500, new { message = "Yorum reddedilirken bir hata oluÅŸtu." });
+                return StatusCode(500, new { message = "Yorum reddedilirken bir hata oluþtu." });
             }
         }
 
@@ -265,7 +265,7 @@ namespace PastirmaApi.API.Controllers
 
                 return BadRequest(new { message = "Yorum silinemedi." });
             }
-            catch (NotFoundException ex)
+            catch (BusinessException ex)
             {
                 return NotFound(new { message = ex.Message });
             }
@@ -276,7 +276,7 @@ namespace PastirmaApi.API.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error deleting review: {ReviewId}", id);
-                return StatusCode(500, new { message = "Yorum silinirken bir hata oluÅŸtu." });
+                return StatusCode(500, new { message = "Yorum silinirken bir hata oluþtu." });
             }
         }
 
@@ -294,7 +294,7 @@ namespace PastirmaApi.API.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error checking if user can review product: {ProductId}", productId);
-                return StatusCode(500, new { message = "Kontrol sÄ±rasÄ±nda bir hata oluÅŸtu." });
+                return StatusCode(500, new { message = "Kontrol sýrasýnda bir hata oluþtu." });
             }
         }
 
@@ -304,7 +304,7 @@ namespace PastirmaApi.API.Controllers
             var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (string.IsNullOrEmpty(userIdClaim) || !int.TryParse(userIdClaim, out int userId))
             {
-                throw new UnauthorizedAccessException("GeÃ§ersiz kullanÄ±cÄ±.");
+                throw new UnauthorizedAccessException("Geçersiz kullanýcý.");
             }
             return userId;
         }

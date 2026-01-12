@@ -65,7 +65,7 @@ namespace PastirmaApi.Application.Services
 
                 if (address == null)
                 {
-                    throw new NotFoundException("Adres bulunamadı.");
+                    throw new BusinessException("Adres bulunamadı.");
                 }
 
                 // If setting as default, unset other defaults
@@ -90,7 +90,7 @@ namespace PastirmaApi.Application.Services
 
                 return MapToDto(address);
             }
-            catch (NotFoundException)
+            catch (BusinessException)
             {
                 throw;
             }
@@ -110,7 +110,7 @@ namespace PastirmaApi.Application.Services
 
                 if (address == null)
                 {
-                    throw new NotFoundException("Adres bulunamadı.");
+                    throw new BusinessException("Adres bulunamadı.");
                 }
 
                 var wasDefault = address.IsDefault;
@@ -137,7 +137,7 @@ namespace PastirmaApi.Application.Services
 
                 return true;
             }
-            catch (NotFoundException)
+            catch (BusinessException)
             {
                 throw;
             }
@@ -157,12 +157,12 @@ namespace PastirmaApi.Application.Services
 
                 if (address == null)
                 {
-                    throw new NotFoundException("Adres bulunamadı.");
+                    throw new BusinessException("Adres bulunamadı.");
                 }
 
                 return MapToDto(address);
             }
-            catch (NotFoundException)
+            catch (BusinessException)
             {
                 throw;
             }
@@ -201,7 +201,7 @@ namespace PastirmaApi.Application.Services
 
                 if (address == null)
                 {
-                    throw new NotFoundException("Adres bulunamadı.");
+                    throw new BusinessException("Adres bulunamadı.");
                 }
 
                 // Unset other defaults
@@ -215,7 +215,7 @@ namespace PastirmaApi.Application.Services
 
                 return MapToDto(address);
             }
-            catch (NotFoundException)
+            catch (BusinessException)
             {
                 throw;
             }

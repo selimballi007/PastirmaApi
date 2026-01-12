@@ -12,178 +12,95 @@ namespace PastirmaApi.API.Controllers
     public class AddressController : ControllerBase
     {
         private readonly IAddressService _addressService;
-        private readonly ILogger<AddressController> _logger;
 
-        public AddressController(IAddressService addressService, ILogger<AddressController> logger)
+        public AddressController(IAddressService addressService)
         {
             _addressService = addressService;
-            _logger = logger;
         }
 
         [HttpGet]
         [Authorize]
         public async Task<ActionResult<List<AddressDTO>>> GetUserAddresses()
         {
-            try
-            {
-                var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-                if (string.IsNullOrEmpty(userId))
-                    return Unauthorized(new { message = "Kullanıcı kimliği bulunamadı." });
-
-                var addresses = await _addressService.GetUserAddressesAsync(int.Parse(userId));
-                return Ok(addresses);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error getting user addresses");
-                return StatusCode(500, new { message = "Adresler getirilirken bir hata oluştu." });
-            }
+            var userId = GetCurrentUserId();
+            var addresses = await _addressService.GetUserAddressesAsync(userId);
+            return Ok(addresses);
         }
 
         [HttpGet("{id}")]
         [Authorize]
         public async Task<ActionResult<AddressDTO>> GetAddress(int id)
         {
-            try
-            {
-                var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-                if (string.IsNullOrEmpty(userId))
-                    return Unauthorized(new { message = "Kullanıcı kimliği bulunamadı." });
-
-                var address = await _addressService.GetAddressByIdAsync(int.Parse(userId), id);
-                return Ok(address);
-            }
-            catch (NotFoundException ex)
-            {
-                return NotFound(new { message = ex.Message });
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error getting address {AddressId}", id);
-                return StatusCode(500, new { message = "Adres getirilirken bir hata oluştu." });
-            }
+            var userId = GetCurrentUserId();
+            var address = await _addressService.GetAddressByIdAsync(userId, id);
+            return Ok(address);
         }
 
         [HttpGet("default")]
         [Authorize]
         public async Task<ActionResult<AddressDTO>> GetDefaultAddress()
         {
-            try
-            {
-                var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-                if (string.IsNullOrEmpty(userId))
-                    return Unauthorized(new { message = "Kullanıcı kimliği bulunamadı." });
+            var userId = GetCurrentUserId();
+            var address = await _addressService.GetDefaultAddressAsync(userId);
 
-                var address = await _addressService.GetDefaultAddressAsync(int.Parse(userId));
+            if (address == null)
+                return NotFound(new { message = "Varsayılan adres bulunamadı." });
 
-                if (address == null)
-                    return NotFound(new { message = "Varsayılan adres bulunamadı." });
-
-                return Ok(address);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error getting default address");
-                return StatusCode(500, new { message = "Varsayılan adres getirilirken bir hata oluştu." });
-            }
+            return Ok(address);
         }
 
         [HttpPost]
         [Authorize]
         public async Task<ActionResult<AddressDTO>> CreateAddress([FromBody] CreateAddressDTO dto)
         {
-            try
-            {
-                var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-                if (string.IsNullOrEmpty(userId))
-                    return Unauthorized(new { message = "Kullanıcı kimliği bulunamadı." });
+            var userId = GetCurrentUserId();
 
-                if (!ModelState.IsValid)
-                    return BadRequest(ModelState);
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
 
-                var address = await _addressService.CreateAddressAsync(int.Parse(userId), dto);
-                return CreatedAtAction(nameof(GetAddress), new { id = address.Id }, address);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error creating address");
-                return StatusCode(500, new { message = "Adres oluşturulurken bir hata oluştu." });
-            }
+            var address = await _addressService.CreateAddressAsync(userId, dto);
+            return CreatedAtAction(nameof(GetAddress), new { id = address.Id }, address);
         }
 
         [HttpPut("{id}")]
         [Authorize]
         public async Task<ActionResult<AddressDTO>> UpdateAddress(int id, [FromBody] UpdateAddressDTO dto)
         {
-            try
-            {
-                var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-                if (string.IsNullOrEmpty(userId))
-                    return Unauthorized(new { message = "Kullanıcı kimliği bulunamadı." });
+            var userId = GetCurrentUserId();
 
-                if (!ModelState.IsValid)
-                    return BadRequest(ModelState);
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
 
-                var address = await _addressService.UpdateAddressAsync(int.Parse(userId), id, dto);
-                return Ok(address);
-            }
-            catch (NotFoundException ex)
-            {
-                return NotFound(new { message = ex.Message });
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error updating address {AddressId}", id);
-                return StatusCode(500, new { message = "Adres güncellenirken bir hata oluştu." });
-            }
+            var address = await _addressService.UpdateAddressAsync(userId, id, dto);
+            return Ok(address);
         }
 
         [HttpDelete("{id}")]
         [Authorize]
         public async Task<ActionResult> DeleteAddress(int id)
         {
-            try
-            {
-                var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-                if (string.IsNullOrEmpty(userId))
-                    return Unauthorized(new { message = "Kullanıcı kimliği bulunamadı." });
-
-                await _addressService.DeleteAddressAsync(int.Parse(userId), id);
-                return Ok(new { message = "Adres başarıyla silindi." });
-            }
-            catch (NotFoundException ex)
-            {
-                return NotFound(new { message = ex.Message });
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error deleting address {AddressId}", id);
-                return StatusCode(500, new { message = "Adres silinirken bir hata oluştu." });
-            }
+            var userId = GetCurrentUserId();
+            await _addressService.DeleteAddressAsync(userId, id);
+            return Ok(new { message = "Adres başarıyla silindi." });
         }
 
         [HttpPut("{id}/set-default")]
         [Authorize]
         public async Task<ActionResult<AddressDTO>> SetDefaultAddress(int id)
         {
-            try
-            {
-                var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-                if (string.IsNullOrEmpty(userId))
-                    return Unauthorized(new { message = "Kullanıcı kimliği bulunamadı." });
+            var userId = GetCurrentUserId();
+            var address = await _addressService.SetDefaultAddressAsync(userId, id);
+            return Ok(address);
+        }
 
-                var address = await _addressService.SetDefaultAddressAsync(int.Parse(userId), id);
-                return Ok(address);
-            }
-            catch (NotFoundException ex)
+        private int GetCurrentUserId()
+        {
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userIdClaim) || !int.TryParse(userIdClaim, out int userId))
             {
-                return NotFound(new { message = ex.Message });
+                throw new BusinessException("Geçersiz kullanıcı.");
             }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error setting default address {AddressId}", id);
-                return StatusCode(500, new { message = "Varsayılan adres ayarlanırken bir hata oluştu." });
-            }
+            return userId;
         }
     }
 }

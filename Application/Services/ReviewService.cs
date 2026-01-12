@@ -27,7 +27,7 @@ namespace PastirmaApi.Application.Services
                 var hasPurchased = await HasUserPurchasedProductAsync(userId, dto.ProductId);
                 if (!hasPurchased)
                 {
-                    throw new UnauthorizedAccessException("Bu ürünü satýn almadan yorum yapamazsýnýz.");
+                    throw new BusinessException("Bu ürünü satýn almadan yorum yapamazsýnýz.");
                 }
 
                 // ? Daha önce yorum yapmýþ mý?
@@ -36,14 +36,14 @@ namespace PastirmaApi.Application.Services
 
                 if (existingReview != null)
                 {
-                    throw new InvalidOperationException("Bu ürün için zaten yorum yaptýnýz.");
+                    throw new BusinessException("Bu ürün için zaten yorum yaptýnýz.");
                 }
 
                 // ? Ürün var mý?
                 var product = await _context.Products.FindAsync(dto.ProductId);
                 if (product == null)
                 {
-                    throw new NotFoundException("Ürün bulunamadý.");
+                    throw new BusinessException("Ürün bulunamadý.");
                 }
 
                 var review = new Review
@@ -77,7 +77,7 @@ namespace PastirmaApi.Application.Services
 
             if (review == null)
             {
-                throw new NotFoundException("Yorum bulunamadý.");
+                throw new BusinessException("Yorum bulunamadý.");
             }
 
             return MapToDto(review);
@@ -187,7 +187,7 @@ namespace PastirmaApi.Application.Services
                 var review = await _context.Reviews.FindAsync(reviewId);
                 if (review == null)
                 {
-                    throw new NotFoundException("Yorum bulunamadý.");
+                    throw new BusinessException("Yorum bulunamadý.");
                 }
 
                 if (review.Status == ReviewStatus.Approved)
@@ -216,7 +216,7 @@ namespace PastirmaApi.Application.Services
                 var review = await _context.Reviews.FindAsync(reviewId);
                 if (review == null)
                 {
-                    throw new NotFoundException("Yorum bulunamadý.");
+                    throw new BusinessException("Yorum bulunamadý.");
                 }
 
                 review.Status = ReviewStatus.Rejected;
@@ -240,13 +240,13 @@ namespace PastirmaApi.Application.Services
                 var review = await _context.Reviews.FindAsync(reviewId);
                 if (review == null)
                 {
-                    throw new NotFoundException("Yorum bulunamadý.");
+                    throw new BusinessException("Yorum bulunamadý.");
                 }
 
                 // ? Sadece kendi yorumunu silebilir
                 if (review.UserId != userId)
                 {
-                    throw new UnauthorizedAccessException("Bu yorumu silme yetkiniz yok.");
+                    throw new BusinessException("Bu yorumu silme yetkiniz yok.");
                 }
 
                 _context.Reviews.Remove(review);

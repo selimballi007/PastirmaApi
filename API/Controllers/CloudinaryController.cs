@@ -28,16 +28,8 @@ namespace PastirmaApi.API.Controllers
         [HttpGet("images")]
         public async Task<ActionResult<List<CloudinaryImageDTO>>> GetAllImages()
         {
-            try
-            {
-                var images = await _cloudinaryService.GetAllImagesAsync();
-                return Ok(images);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error fetching Cloudinary images");
-                return StatusCode(500, new { message = "Error fetching images from Cloudinary", error = ex.Message });
-            }
+            var images = await _cloudinaryService.GetAllImagesAsync();
+            return Ok(images);
         }
 
         /// <summary>
@@ -47,21 +39,13 @@ namespace PastirmaApi.API.Controllers
         [HttpGet("images/usage")]
         public async Task<ActionResult<List<ProductUsageDTO>>> GetImageUsage([FromQuery] string imageUrl)
         {
-            try
+            if (string.IsNullOrEmpty(imageUrl))
             {
-                if (string.IsNullOrEmpty(imageUrl))
-                {
-                    return BadRequest(new { message = "Image URL is required" });
-                }
+                return BadRequest(new { message = "Image URL is required" });
+            }
 
-                var usage = await _cloudinaryService.GetProductsUsingImageAsync(imageUrl);
-                return Ok(usage);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error checking image usage");
-                return StatusCode(500, new { message = "Error checking image usage", error = ex.Message });
-            }
+            var usage = await _cloudinaryService.GetProductsUsingImageAsync(imageUrl);
+            return Ok(usage);
         }
 
         /// <summary>
@@ -73,32 +57,24 @@ namespace PastirmaApi.API.Controllers
             string publicId,
             [FromQuery] bool updateDatabase = true)
         {
-            try
+            if (string.IsNullOrEmpty(publicId))
             {
-                if (string.IsNullOrEmpty(publicId))
-                {
-                    return BadRequest(new { message = "Public ID is required" });
-                }
-
-                // Decode URL-encoded publicId (e.g., "products%2Fimage" -> "products/image")
-                var decodedPublicId = Uri.UnescapeDataString(publicId);
-                _logger.LogInformation("Deleting image - Original: {Original}, Decoded: {Decoded}", publicId, decodedPublicId);
-
-                var result = await _cloudinaryService.DeleteImageAsync(decodedPublicId, updateDatabase);
-
-                if (result.Success)
-                {
-                    return Ok(result);
-                }
-                else
-                {
-                    return BadRequest(result);
-                }
+                return BadRequest(new { message = "Public ID is required" });
             }
-            catch (Exception ex)
+
+            // Decode URL-encoded publicId (e.g., "products%2Fimage" -> "products/image")
+            var decodedPublicId = Uri.UnescapeDataString(publicId);
+            _logger.LogInformation("Deleting image - Original: {Original}, Decoded: {Decoded}", publicId, decodedPublicId);
+
+            var result = await _cloudinaryService.DeleteImageAsync(decodedPublicId, updateDatabase);
+
+            if (result.Success)
             {
-                _logger.LogError(ex, "Error deleting image: {PublicId}", publicId);
-                return StatusCode(500, new { message = "Error deleting image", error = ex.Message });
+                return Ok(result);
+            }
+            else
+            {
+                return BadRequest(result);
             }
         }
 
@@ -109,34 +85,26 @@ namespace PastirmaApi.API.Controllers
         [HttpPut("images/update-urls")]
         public async Task<ActionResult> UpdateImageUrls([FromBody] UpdateImageUrlsRequest request)
         {
-            try
+            if (string.IsNullOrEmpty(request.OldUrl) || string.IsNullOrEmpty(request.NewUrl))
             {
-                if (string.IsNullOrEmpty(request.OldUrl) || string.IsNullOrEmpty(request.NewUrl))
-                {
-                    return BadRequest(new { message = "Both old and new URLs are required" });
-                }
-
-                // Only update if URLs are different
-                if (request.OldUrl == request.NewUrl)
-                {
-                    return Ok(new { message = "URLs are the same, no update needed" });
-                }
-
-                var success = await _cloudinaryService.UpdateProductImageUrlsAsync(request.OldUrl, request.NewUrl);
-
-                if (success)
-                {
-                    return Ok(new { message = "Product image URLs updated successfully" });
-                }
-                else
-                {
-                    return StatusCode(500, new { message = "Failed to update product image URLs" });
-                }
+                return BadRequest(new { message = "Both old and new URLs are required" });
             }
-            catch (Exception ex)
+
+            // Only update if URLs are different
+            if (request.OldUrl == request.NewUrl)
             {
-                _logger.LogError(ex, "Error updating image URLs");
-                return StatusCode(500, new { message = "Error updating image URLs", error = ex.Message });
+                return Ok(new { message = "URLs are the same, no update needed" });
+            }
+
+            var success = await _cloudinaryService.UpdateProductImageUrlsAsync(request.OldUrl, request.NewUrl);
+
+            if (success)
+            {
+                return Ok(new { message = "Product image URLs updated successfully" });
+            }
+            else
+            {
+                return StatusCode(500, new { message = "Failed to update product image URLs" });
             }
         }
     }

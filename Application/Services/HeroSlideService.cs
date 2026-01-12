@@ -1,4 +1,4 @@
-ï»¿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using PastirmaApi.Application.DTOs.HeroSlideDTOs;
 using PastirmaApi.Application.Interfaces.Services;
 using PastirmaApi.Core.Entities;
@@ -22,7 +22,7 @@ namespace PastirmaApi.Application.Services
         {
             try
             {
-                // âœ… En yÃ¼ksek DisplayOrder'Ä± bul
+                // ? En yüksek DisplayOrder'ý bul
                 var maxOrder = await _context.HeroSlides
                     .MaxAsync(s => (int?)s.DisplayOrder) ?? 0;
 
@@ -61,7 +61,7 @@ namespace PastirmaApi.Application.Services
                 var slide = await _context.HeroSlides.FindAsync(id);
                 if (slide == null)
                 {
-                    throw new NotFoundException("Slide bulunamadÄ±.");
+                    throw new BusinessException("Slide bulunamadý.");
                 }
 
                 slide.Title = dto.Title;
@@ -93,7 +93,7 @@ namespace PastirmaApi.Application.Services
                 var slide = await _context.HeroSlides.FindAsync(id);
                 if (slide == null)
                 {
-                    throw new NotFoundException("Slide bulunamadÄ±.");
+                    throw new BusinessException("Slide bulunamadý.");
                 }
 
                 _context.HeroSlides.Remove(slide);
@@ -129,7 +129,7 @@ namespace PastirmaApi.Application.Services
 
             if (slide == null)
             {
-                throw new NotFoundException("Slide bulunamadÄ±.");
+                throw new BusinessException("Slide bulunamadý.");
             }
 
             return MapToDto(slide);
@@ -194,7 +194,7 @@ namespace PastirmaApi.Application.Services
                 var slide = await _context.HeroSlides.FindAsync(id);
                 if (slide == null)
                 {
-                    throw new NotFoundException("Slide bulunamadÄ±.");
+                    throw new BusinessException("Slide bulunamadý.");
                 }
 
                 slide.IsActive = !slide.IsActive;

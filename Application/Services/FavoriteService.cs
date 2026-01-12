@@ -1,4 +1,4 @@
-ï»¿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using PastirmaApi.Application.DTOs.ProductDTOs;
@@ -25,11 +25,11 @@ namespace PastirmaApi.Application.Services
         {
             try
             {
-                // ÃœrÃ¼n var mÄ±?
+                // Ürün var mý?
                 var productExists = await _context.Products.AnyAsync(p => p.Id == productId);
                 if (!productExists)
                 {
-                    throw new NotFoundException("ÃœrÃ¼n bulunamadÄ±.");
+                    throw new BusinessException("Ürün bulunamadý.");
                 }
 
                 // Zaten favorilerde mi?
@@ -153,16 +153,16 @@ namespace PastirmaApi.Application.Services
             {
                 var userId = GetUserId();
                 await _favoriteService.AddToFavoritesAsync(userId, productId);
-                return Ok(new { message = "ÃœrÃ¼n favorilere eklendi." });
+                return Ok(new { message = "Ürün favorilere eklendi." });
             }
-            catch (NotFoundException ex)
+            catch (BusinessException ex)
             {
                 return NotFound(new { message = ex.Message });
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error adding to favorites");
-                return StatusCode(500, new { message = "Favorilere eklenirken bir hata oluÅŸtu." });
+                return StatusCode(500, new { message = "Favorilere eklenirken bir hata oluþtu." });
             }
         }
 
@@ -177,15 +177,15 @@ namespace PastirmaApi.Application.Services
 
                 if (result)
                 {
-                    return Ok(new { message = "ÃœrÃ¼n favorilerden Ã§Ä±karÄ±ldÄ±." });
+                    return Ok(new { message = "Ürün favorilerden çýkarýldý." });
                 }
 
-                return NotFound(new { message = "Favori bulunamadÄ±." });
+                return NotFound(new { message = "Favori bulunamadý." });
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error removing from favorites");
-                return StatusCode(500, new { message = "Favorilerden Ã§Ä±karÄ±lÄ±rken bir hata oluÅŸtu." });
+                return StatusCode(500, new { message = "Favorilerden çýkarýlýrken bir hata oluþtu." });
             }
         }
 
@@ -202,7 +202,7 @@ namespace PastirmaApi.Application.Services
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error checking favorite");
-                return StatusCode(500, new { message = "Kontrol sÄ±rasÄ±nda bir hata oluÅŸtu." });
+                return StatusCode(500, new { message = "Kontrol sýrasýnda bir hata oluþtu." });
             }
         }
 
@@ -219,7 +219,7 @@ namespace PastirmaApi.Application.Services
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error getting favorites");
-                return StatusCode(500, new { message = "Favoriler getirilirken bir hata oluÅŸtu." });
+                return StatusCode(500, new { message = "Favoriler getirilirken bir hata oluþtu." });
             }
         }
 
@@ -236,7 +236,7 @@ namespace PastirmaApi.Application.Services
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error getting favorite count");
-                return StatusCode(500, new { message = "SayÄ± alÄ±nÄ±rken bir hata oluÅŸtu." });
+                return StatusCode(500, new { message = "Sayý alýnýrken bir hata oluþtu." });
             }
         }
 
@@ -245,7 +245,7 @@ namespace PastirmaApi.Application.Services
             var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (string.IsNullOrEmpty(userIdClaim) || !int.TryParse(userIdClaim, out int userId))
             {
-                throw new UnauthorizedAccessException("GeÃ§ersiz kullanÄ±cÄ±.");
+                throw new UnauthorizedAccessException("Geçersiz kullanýcý.");
             }
             return userId;
         }

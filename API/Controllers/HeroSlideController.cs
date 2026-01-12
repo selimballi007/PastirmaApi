@@ -1,4 +1,4 @@
-ï»¿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using PastirmaApi.Application.DTOs.HeroSlideDTOs;
@@ -33,7 +33,7 @@ namespace PastirmaApi.API.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error creating hero slide");
-                return StatusCode(500, new { message = "Slide oluÅŸturulurken bir hata oluÅŸtu." });
+                return StatusCode(500, new { message = "Slide oluþturulurken bir hata oluþtu." });
             }
         }
 
@@ -47,14 +47,14 @@ namespace PastirmaApi.API.Controllers
                 var slide = await _heroSlideService.UpdateSlideAsync(id, dto);
                 return Ok(slide);
             }
-            catch (NotFoundException ex)
+            catch (BusinessException ex)
             {
                 return NotFound(new { message = ex.Message });
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error updating hero slide: {SlideId}", id);
-                return StatusCode(500, new { message = "Slide gÃ¼ncellenirken bir hata oluÅŸtu." });
+                return StatusCode(500, new { message = "Slide güncellenirken bir hata oluþtu." });
             }
         }
 
@@ -66,16 +66,16 @@ namespace PastirmaApi.API.Controllers
             try
             {
                 await _heroSlideService.DeleteSlideAsync(id);
-                return Ok(new { message = "Slide baÅŸarÄ±yla silindi." });
+                return Ok(new { message = "Slide baþarýyla silindi." });
             }
-            catch (NotFoundException ex)
+            catch (BusinessException ex)
             {
                 return NotFound(new { message = ex.Message });
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error deleting hero slide: {SlideId}", id);
-                return StatusCode(500, new { message = "Slide silinirken bir hata oluÅŸtu." });
+                return StatusCode(500, new { message = "Slide silinirken bir hata oluþtu." });
             }
         }
 
@@ -88,14 +88,14 @@ namespace PastirmaApi.API.Controllers
                 var slide = await _heroSlideService.GetSlideByIdAsync(id);
                 return Ok(slide);
             }
-            catch (NotFoundException ex)
+            catch (BusinessException ex)
             {
                 return NotFound(new { message = ex.Message });
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error getting hero slide: {SlideId}", id);
-                return StatusCode(500, new { message = "Slide getirilirken bir hata oluÅŸtu." });
+                return StatusCode(500, new { message = "Slide getirilirken bir hata oluþtu." });
             }
         }
 
@@ -111,7 +111,7 @@ namespace PastirmaApi.API.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error getting all hero slides");
-                return StatusCode(500, new { message = "Slide'lar getirilirken bir hata oluÅŸtu." });
+                return StatusCode(500, new { message = "Slide'lar getirilirken bir hata oluþtu." });
             }
         }
 
@@ -127,7 +127,7 @@ namespace PastirmaApi.API.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error getting active hero slides");
-                return StatusCode(500, new { message = "Aktif slide'lar getirilirken bir hata oluÅŸtu." });
+                return StatusCode(500, new { message = "Aktif slide'lar getirilirken bir hata oluþtu." });
             }
         }
 
@@ -139,12 +139,12 @@ namespace PastirmaApi.API.Controllers
             try
             {
                 await _heroSlideService.ReorderSlidesAsync(slides);
-                return Ok(new { message = "Slide sÄ±ralamasÄ± gÃ¼ncellendi." });
+                return Ok(new { message = "Slide sýralamasý güncellendi." });
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error reordering hero slides");
-                return StatusCode(500, new { message = "SÄ±ralama gÃ¼ncellenirken bir hata oluÅŸtu." });
+                return StatusCode(500, new { message = "Sýralama güncellenirken bir hata oluþtu." });
             }
         }
 
@@ -162,14 +162,14 @@ namespace PastirmaApi.API.Controllers
                     isActive
                 });
             }
-            catch (NotFoundException ex)
+            catch (BusinessException ex)
             {
                 return NotFound(new { message = ex.Message });
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error toggling hero slide status: {SlideId}", id);
-                return StatusCode(500, new { message = "Durum deÄŸiÅŸtirilirken bir hata oluÅŸtu." });
+                return StatusCode(500, new { message = "Durum deðiþtirilirken bir hata oluþtu." });
             }
         }
     }

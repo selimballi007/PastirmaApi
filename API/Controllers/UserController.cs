@@ -104,7 +104,7 @@ namespace PastirmaApi.API.Controllers
             if (string.IsNullOrEmpty(refreshToken))
             {
                 Console.WriteLine("[RefreshToken] ERROR: refreshToken is null or empty!");
-                throw new AuthException("Tekrar Giriş yapınız");
+                throw new BusinessException("Tekrar Giriş yapınız");
             }
 
             var accessToken = Request.Cookies["accessToken"];
@@ -113,7 +113,7 @@ namespace PastirmaApi.API.Controllers
             if (string.IsNullOrEmpty(accessToken))
             {
                 Console.WriteLine("[RefreshToken] ERROR: accessToken is null or empty!");
-                throw new AuthException("Tekrar Giriş yapınız");
+                throw new BusinessException("Tekrar Giriş yapınız");
             }
 
             Console.WriteLine("[RefreshToken] Calling RefreshAccessTokenAsync...");
@@ -275,8 +275,11 @@ namespace PastirmaApi.API.Controllers
             };
             if (env.IsDevelopment())
             {
+                // Development: Use Lax for localhost, None for IP-based access
+                // Note: SameSite=None requires Secure=true (HTTPS), but we're using HTTP in dev
+                // So we use Lax which works for same-site (localhost) and is more compatible
                 cookieOptions.Secure = false;
-                cookieOptions.SameSite = SameSiteMode.Lax;
+                cookieOptions.SameSite = SameSiteMode.Lax; // Lax works for localhost, compatible with HTTP
             }
             else
             {
@@ -305,13 +308,16 @@ namespace PastirmaApi.API.Controllers
             };
             if (env.IsDevelopment())
             {
+                // Development: Use Lax for localhost, None for IP-based access
+                // Note: SameSite=None requires Secure=true (HTTPS), but we're using HTTP in dev
+                // So we use Lax which works for same-site (localhost) and is more compatible
                 cookieOptions.Secure = false;
-                cookieOptions.SameSite= SameSiteMode.Lax;
+                cookieOptions.SameSite = SameSiteMode.Lax; // Lax works for localhost, compatible with HTTP
             }
             else
             {
-                cookieOptions.Secure = true;// Only works on HTTPS
-                cookieOptions.SameSite = SameSiteMode.Strict;// Protects against CSRF
+                cookieOptions.Secure = true; // Only works on HTTPS
+                cookieOptions.SameSite = SameSiteMode.Strict; // Protects against CSRF
             }
 
             Response.Cookies.Append("refreshToken", refreshToken, cookieOptions);

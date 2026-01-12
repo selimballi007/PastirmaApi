@@ -1,4 +1,4 @@
-ï»¿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using PastirmaApi.Application.DTOs.CategoryDTOs;
@@ -38,7 +38,7 @@ namespace PastirmaApi.API.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error creating category");
-                return StatusCode(500, new { message = "Kategori oluÅŸturulurken bir hata oluÅŸtu." });
+                return StatusCode(500, new { message = "Kategori oluþturulurken bir hata oluþtu." });
             }
         }
 
@@ -52,7 +52,7 @@ namespace PastirmaApi.API.Controllers
                 var category = await _categoryService.UpdateCategoryAsync(id, dto);
                 return Ok(category);
             }
-            catch (NotFoundException ex)
+            catch (BusinessException ex)
             {
                 return NotFound(new { message = ex.Message });
             }
@@ -63,7 +63,7 @@ namespace PastirmaApi.API.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error updating category: {CategoryId}", id);
-                return StatusCode(500, new { message = "Kategori gÃ¼ncellenirken bir hata oluÅŸtu." });
+                return StatusCode(500, new { message = "Kategori güncellenirken bir hata oluþtu." });
             }
         }
 
@@ -75,9 +75,9 @@ namespace PastirmaApi.API.Controllers
             try
             {
                 await _categoryService.DeleteCategoryAsync(id);
-                return Ok(new { message = "Kategori baÅŸarÄ±yla silindi." });
+                return Ok(new { message = "Kategori baþarýyla silindi." });
             }
-            catch (NotFoundException ex)
+            catch (BusinessException ex)
             {
                 return NotFound(new { message = ex.Message });
             }
@@ -88,7 +88,7 @@ namespace PastirmaApi.API.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error deleting category: {CategoryId}", id);
-                return StatusCode(500, new { message = "Kategori silinirken bir hata oluÅŸtu." });
+                return StatusCode(500, new { message = "Kategori silinirken bir hata oluþtu." });
             }
         }
 
@@ -101,14 +101,14 @@ namespace PastirmaApi.API.Controllers
                 var category = await _categoryService.GetCategoryByIdAsync(id);
                 return Ok(category);
             }
-            catch (NotFoundException ex)
+            catch (BusinessException ex)
             {
                 return NotFound(new { message = ex.Message });
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error getting category: {CategoryId}", id);
-                return StatusCode(500, new { message = "Kategori getirilirken bir hata oluÅŸtu." });
+                return StatusCode(500, new { message = "Kategori getirilirken bir hata oluþtu." });
             }
         }
 
@@ -124,7 +124,7 @@ namespace PastirmaApi.API.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error getting all categories");
-                return StatusCode(500, new { message = "Kategoriler getirilirken bir hata oluÅŸtu." });
+                return StatusCode(500, new { message = "Kategoriler getirilirken bir hata oluþtu." });
             }
         }
 
@@ -140,7 +140,7 @@ namespace PastirmaApi.API.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error getting categories with product count");
-                return StatusCode(500, new { message = "Kategoriler getirilirken bir hata oluÅŸtu." });
+                return StatusCode(500, new { message = "Kategoriler getirilirken bir hata oluþtu." });
             }
         }
 
@@ -152,12 +152,12 @@ namespace PastirmaApi.API.Controllers
             try
             {
                 await _categoryService.ReorderCategoriesAsync(categories);
-                return Ok(new { message = "Kategori sÄ±ralamasÄ± gÃ¼ncellendi." });
+                return Ok(new { message = "Kategori sýralamasý güncellendi." });
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error reordering categories");
-                return StatusCode(500, new { message = "SÄ±ralama gÃ¼ncellenirken bir hata oluÅŸtu." });
+                return StatusCode(500, new { message = "Sýralama güncellenirken bir hata oluþtu." });
             }
         }
 
@@ -175,14 +175,14 @@ namespace PastirmaApi.API.Controllers
                     isActive
                 });
             }
-            catch (NotFoundException ex)
+            catch (BusinessException ex)
             {
                 return NotFound(new { message = ex.Message });
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error toggling category status: {CategoryId}", id);
-                return StatusCode(500, new { message = "Durum deÄŸiÅŸtirilirken bir hata oluÅŸtu." });
+                return StatusCode(500, new { message = "Durum deðiþtirilirken bir hata oluþtu." });
             }
         }
     }

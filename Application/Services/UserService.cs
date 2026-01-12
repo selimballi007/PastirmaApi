@@ -32,7 +32,7 @@ namespace PastirmaApi.Application.Services
         public async Task RegisterUserAsync(RegisterUserDTO dto) {
 
             if (await UserExistsAsync(dto.Email))
-                throw new AuthException("Bu email zaten kayıtlı");
+                throw new BusinessException("Bu email zaten kayıtlı");
 
             var user = new User
             {
@@ -231,19 +231,19 @@ namespace PastirmaApi.Application.Services
             var tokenReadStopwatch = Stopwatch.StartNew();
             var principal = _jwtService.GetPrincipalFromExpiredToken(accessToken);
             if (principal == null)
-                throw new AuthException("Tekrar Giriş yapınız");
+                throw new BusinessException("Tekrar Giriş yapınız");
             var userId = principal.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if(string.IsNullOrEmpty(userId))
-                throw new AuthException("Tekrar Giriş yapınız");
+                throw new BusinessException("Tekrar Giriş yapınız");
             var userEmail = principal.FindFirst(ClaimTypes.Email)?.Value;
             if (string.IsNullOrEmpty(userEmail))
-                throw new AuthException("Tekrar Giriş yapınız");
+                throw new BusinessException("Tekrar Giriş yapınız");
             var userName = principal.FindFirst(ClaimTypes.Name)?.Value;
             if (string.IsNullOrEmpty(userName))
-                throw new AuthException("Tekrar Giriş yapınız");
+                throw new BusinessException("Tekrar Giriş yapınız");
             var userRole = principal.FindFirst(ClaimTypes.Role)?.Value;
             if (string.IsNullOrEmpty(userRole))
-                throw new AuthException("Tekrar Giriş yapınız");
+                throw new BusinessException("Tekrar Giriş yapınız");
             tokenReadStopwatch.Stop();
 
             var tokenCreateStopwatch = Stopwatch.StartNew();

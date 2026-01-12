@@ -1,4 +1,4 @@
-ï»¿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using PastirmaApi.Application.DTOs.CategoryDTOs;
 using PastirmaApi.Application.Interfaces.Services;
 using PastirmaApi.Core.Entities;
@@ -22,23 +22,23 @@ namespace PastirmaApi.Application.Services
         {
             try
             {
-                // âœ… AynÄ± isimde kategori var mÄ±?
+                // ? Ayný isimde kategori var mý?
                 var exists = await _context.Categories
                     .AnyAsync(c => c.Name.ToLower() == dto.Name.ToLower());
 
                 if (exists)
                 {
-                    throw new InvalidOperationException("Bu isimde bir kategori zaten mevcut.");
+                    throw new BusinessException("Bu isimde bir kategori zaten mevcut.");
                 }
 
-                // âœ… En yÃ¼ksek DisplayOrder'Ä± bul
+                // ? En yüksek DisplayOrder'ý bul
                 var maxOrder = await _context.Categories
                     .MaxAsync(c => (int?)c.DisplayOrder) ?? 0;
 
                 var category = new Category
                 {
                     Name = dto.Name,
-                    Icon = dto.Icon ?? "ðŸ“¦",
+                    Icon = dto.Icon ?? "??",
                     DisplayOrder = maxOrder + 1
                 };
 
@@ -64,16 +64,16 @@ namespace PastirmaApi.Application.Services
                 var category = await _context.Categories.FindAsync(id);
                 if (category == null)
                 {
-                    throw new NotFoundException("Kategori bulunamadÄ±.");
+                    throw new BusinessException("Kategori bulunamadý.");
                 }
 
-                // âœ… FarklÄ± bir kategori aynÄ± isme sahip mi?
+                // ? Farklý bir kategori ayný isme sahip mi?
                 var exists = await _context.Categories
                     .AnyAsync(c => c.Name.ToLower() == dto.Name.ToLower() && c.Id != id);
 
                 if (exists)
                 {
-                    throw new InvalidOperationException("Bu isimde bir kategori zaten mevcut.");
+                    throw new BusinessException("Bu isimde bir kategori zaten mevcut.");
                 }
 
                 category.Name = dto.Name;
@@ -103,14 +103,14 @@ namespace PastirmaApi.Application.Services
 
                 if (category == null)
                 {
-                    throw new NotFoundException("Kategori bulunamadÄ±.");
+                    throw new BusinessException("Kategori bulunamadý.");
                 }
 
-                // âœ… Kategoride Ã¼rÃ¼n var mÄ± kontrol et
+                // ? Kategoride ürün var mý kontrol et
                 if (category.Products.Any())
                 {
-                    throw new InvalidOperationException(
-                        $"Bu kategoride {category.Products.Count} adet Ã¼rÃ¼n var. Ã–nce Ã¼rÃ¼nleri baÅŸka kategoriye taÅŸÄ±yÄ±n veya silin."
+                    throw new BusinessException(
+                        $"Bu kategoride {category.Products.Count} adet ürün var. Önce ürünleri baþka kategoriye taþýyýn veya silin."
                     );
                 }
 
@@ -135,7 +135,7 @@ namespace PastirmaApi.Application.Services
 
             if (category == null)
             {
-                throw new NotFoundException("Kategori bulunamadÄ±.");
+                throw new BusinessException("Kategori bulunamadý.");
             }
 
             return MapToDto(category);
@@ -169,7 +169,7 @@ namespace PastirmaApi.Application.Services
                     Icon = c.Icon,
                     DisplayOrder = c.DisplayOrder,
                     IsActive = c.IsActive,
-                    ProductCount = c.Products.Count(p => p.IsActive), // Sadece aktif Ã¼rÃ¼nler
+                    ProductCount = c.Products.Count(p => p.IsActive), // Sadece aktif ürünler
                     CreatedAt = c.CreatedDate
                 })
                 .ToListAsync();
@@ -209,7 +209,7 @@ namespace PastirmaApi.Application.Services
                 var category = await _context.Categories.FindAsync(id);
                 if (category == null)
                 {
-                    throw new NotFoundException("Kategori bulunamadÄ±.");
+                    throw new BusinessException("Kategori bulunamadý.");
                 }
 
                 category.IsActive = !category.IsActive;

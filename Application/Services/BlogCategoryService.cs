@@ -50,7 +50,7 @@ namespace PastirmaApi.Application.Services
                 var category = await _context.BlogCategories.FindAsync(id);
                 if (category == null)
                 {
-                    throw new NotFoundException("Kategori bulunamadı.");
+                    throw new BusinessException("Kategori bulunamadı.");
                 }
 
                 category.Name = dto.Name;
@@ -77,7 +77,7 @@ namespace PastirmaApi.Application.Services
                 var category = await _context.BlogCategories.FindAsync(id);
                 if (category == null)
                 {
-                    throw new NotFoundException("Kategori bulunamadı.");
+                    throw new BusinessException("Kategori bulunamadı.");
                 }
 
                 // Check if category has blog posts
@@ -107,7 +107,7 @@ namespace PastirmaApi.Application.Services
 
             if (category == null)
             {
-                throw new NotFoundException("Kategori bulunamadı.");
+                throw new BusinessException("Kategori bulunamadı.");
             }
 
             return MapToDto(category);

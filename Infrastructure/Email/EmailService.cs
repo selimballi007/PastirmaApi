@@ -38,37 +38,10 @@ namespace PastirmaApi.Infrastructure.Email
             {
                 var result = await _resend.EmailSendAsync(message);
             }
-            catch (ResendException ex)
-            {
-                _logger.LogError(ex, "Email gönderilemedi. - " + ex.ErrorType.ToString()+" - "+ ex.StatusCode.ToString());
-                throw new EmailException(
-                    "Email servisine ulaşılamıyor. Lütfen daha sonra tekrar deneyin.",
-                    StatusCodes.Status502BadGateway
-                );
-            }
-            catch (TimeoutException ex)
-            {
-                _logger.LogError(ex, "TimeoutException: Email gönderimi zaman aşımına uğradı.");
-                throw new EmailException(
-                    "Email servisi yanıt vermedi. Lütfen tekrar deneyin.",
-                    StatusCodes.Status504GatewayTimeout
-                );
-            }
-            catch (FormatException ex)
-            {
-                _logger.LogError(ex, "FormatException: Geçersiz email adresi.");
-                throw new EmailException(
-                    "Geçersiz email adresi.",
-                    StatusCodes.Status400BadRequest
-                );
-            }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Beklenmeyen email hatası.");
-                throw new EmailException(
-                    "Email gönderilemedi. Lütfen tekrar deneyin.",
-                    StatusCodes.Status500InternalServerError
-                );
+                _logger.LogError(ex, "Email gönderilemedi: {ErrorType}", ex.GetType().Name);
+                throw new BusinessException("Email gönderilemedi. Lütfen tekrar deneyin.");
             }
         }
     }
