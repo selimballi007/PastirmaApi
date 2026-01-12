@@ -64,6 +64,12 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 
+// DEBUG: Log connection string info (temporary - remove after fixing)
+Console.WriteLine($"[DEBUG] Connection string is null: {connectionString == null}");
+Console.WriteLine($"[DEBUG] Connection string is empty: {string.IsNullOrEmpty(connectionString)}");
+Console.WriteLine($"[DEBUG] Connection string length: {connectionString?.Length ?? 0}");
+Console.WriteLine($"[DEBUG] Connection string first 20 chars: {(connectionString?.Length > 20 ? connectionString.Substring(0, 20) : connectionString ?? "NULL")}");
+
 if (string.IsNullOrEmpty(connectionString))
     throw new InvalidOperationException("Connection string is not configured");
 
