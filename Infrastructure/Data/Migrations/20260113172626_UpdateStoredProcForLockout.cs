@@ -10,9 +10,12 @@ namespace PastirmaApi.Infrastructure.Data.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            // Update get_and_update_user_login stored procedure to include lockout fields
+            // Drop existing function first (PostgreSQL doesn't allow changing return type with CREATE OR REPLACE)
+            migrationBuilder.Sql("DROP FUNCTION IF EXISTS public.get_and_update_user_login(TEXT, TEXT, TIMESTAMP WITH TIME ZONE);");
+
+            // Create updated stored procedure with lockout fields
             migrationBuilder.Sql(@"
-                CREATE OR REPLACE FUNCTION public.get_and_update_user_login(
+                CREATE FUNCTION public.get_and_update_user_login(
                     p_email TEXT,
                     p_refresh_token TEXT,
                     p_refresh_token_expiry TIMESTAMP WITH TIME ZONE
@@ -70,9 +73,12 @@ namespace PastirmaApi.Infrastructure.Data.Migrations
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            // Revert to old stored procedure without lockout fields
+            // Drop function with lockout fields
+            migrationBuilder.Sql("DROP FUNCTION IF EXISTS public.get_and_update_user_login(TEXT, TEXT, TIMESTAMP WITH TIME ZONE);");
+
+            // Recreate old stored procedure without lockout fields
             migrationBuilder.Sql(@"
-                CREATE OR REPLACE FUNCTION public.get_and_update_user_login(
+                CREATE FUNCTION public.get_and_update_user_login(
                     p_email TEXT,
                     p_refresh_token TEXT,
                     p_refresh_token_expiry TIMESTAMP WITH TIME ZONE
