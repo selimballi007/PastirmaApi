@@ -67,6 +67,16 @@ var connectionString = builder.Configuration.GetConnectionString("DefaultConnect
 if (string.IsNullOrEmpty(connectionString))
     throw new InvalidOperationException("Connection string is not configured");
 
+// Convert PostgreSQL URL to Entity Framework format if needed
+if (connectionString.StartsWith("postgresql://") || connectionString.StartsWith("postgres://"))
+{
+    Console.WriteLine("[INFO] Converting PostgreSQL URL to EF connection string format...");
+    var uri = new Uri(connectionString.Replace("postgresql://", "postgres://"));
+    var userInfo = uri.UserInfo.Split(':');
+    connectionString = $"Host={uri.Host};Port={uri.Port};Database={uri.AbsolutePath.TrimStart('/')};Username={userInfo[0]};Password={userInfo[1]};SSL Mode=Require;Trust Server Certificate=true";
+    Console.WriteLine($"[INFO] Converted connection string (password hidden): Host={uri.Host};Port={uri.Port};Database={uri.AbsolutePath.TrimStart('/')};Username={userInfo[0]};Password=***");
+}
+
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseNpgsql(connectionString));
 builder.Services.AddScoped<IUserRepository, UserRepository>();
