@@ -20,13 +20,15 @@ namespace PastirmaApi.Application.Services
         private readonly IJwtService _jwtService;
         private readonly IConfiguration _configuration;
         private readonly IEmailService _emailService;
+        private readonly ILogger<UserService> _logger;
 
-        public UserService(IUserRepository repository, IJwtService jwtService, IConfiguration configuration, IEmailService emailService )
+        public UserService(IUserRepository repository, IJwtService jwtService, IConfiguration configuration, IEmailService emailService, ILogger<UserService> logger)
         {
             _repository = repository;
             _jwtService = jwtService;
             _configuration = configuration;
             _emailService = emailService;
+            _logger = logger;
         }
 
         public async Task RegisterUserAsync(RegisterUserDTO dto) {
@@ -62,9 +64,10 @@ namespace PastirmaApi.Application.Services
                     }
                 );
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                //Email errors should not go to the user. We will send a verification email again at the login   
+                // Log the error for debugging - email errors should not block registration
+                _logger.LogError(ex, "Failed to send verification email to {Email}. User can request resend later.", user.Email);
             }
         }
 
