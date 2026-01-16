@@ -51,7 +51,7 @@ namespace PastirmaApi.Infrastructure.Email
             {
                 _logger.LogWarning("Calling Resend API...");
                 var result = await _resend.EmailSendAsync(message);
-                _logger.LogWarning("Email sent successfully! Result: {Result}", result?.Id ?? "No ID returned");
+                _logger.LogWarning("Email sent successfully! Result: {Result}", result?.Content.ToString() ?? "No ID returned");
             }
             catch (Exception ex)
             {
