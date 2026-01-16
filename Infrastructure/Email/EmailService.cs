@@ -28,10 +28,10 @@ namespace PastirmaApi.Infrastructure.Email
         {
             var emailFrom = _config["Resend:EmailFrom"];
 
-            _logger.LogInformation("=== EMAIL SEND ATTEMPT ===");
-            _logger.LogInformation("To: {ToEmail}", toEmail);
-            _logger.LogInformation("From: {FromEmail}", emailFrom ?? "NOT CONFIGURED");
-            _logger.LogInformation("Template: {TemplateType}", templateType);
+            _logger.LogWarning("=== EMAIL SEND ATTEMPT ===");
+            _logger.LogWarning("To: {ToEmail}", toEmail);
+            _logger.LogWarning("From: {FromEmail}", emailFrom ?? "NOT CONFIGURED");
+            _logger.LogWarning("Template: {TemplateType}", templateType);
 
             if (string.IsNullOrEmpty(emailFrom))
             {
@@ -49,9 +49,9 @@ namespace PastirmaApi.Infrastructure.Email
 
             try
             {
-                _logger.LogInformation("Calling Resend API...");
+                _logger.LogWarning("Calling Resend API...");
                 var result = await _resend.EmailSendAsync(message);
-                _logger.LogInformation("Email sent successfully! Result: {Result}", result?.Id ?? "No ID returned");
+                _logger.LogWarning("Email sent successfully! Result: {Result}", result?.Id ?? "No ID returned");
             }
             catch (Exception ex)
             {

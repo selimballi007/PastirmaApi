@@ -32,6 +32,7 @@ namespace PastirmaApi.Application.Services
         }
 
         public async Task RegisterUserAsync(RegisterUserDTO dto) {
+            _logger.LogWarning("=== REGISTER USER START === Email: {Email}", dto.Email);
 
             if (await UserExistsAsync(dto.Email))
                 throw new BusinessException("Bu email zaten kayıtlı");
@@ -47,10 +48,15 @@ namespace PastirmaApi.Application.Services
             };
 
             await _repository.AddAsync(user);
+            _logger.LogWarning("User created in DB. ID: {UserId}", user.Id);
 
             // Create Email verification token
+            var frontendUrl = _configuration["FrontendUrl"];
+            _logger.LogWarning("FrontendUrl config: {FrontendUrl}", frontendUrl ?? "NOT CONFIGURED");
+
             var token = _jwtService.GenerateEmailVerificationToken(user.Email);
-            var verifyLink = $"{_configuration["FrontendUrl"]}/account/verify-email?token={token}";
+            var verifyLink = $"{frontendUrl}/account/verify-email?token={token}";
+            _logger.LogWarning("Verify link: {VerifyLink}", verifyLink);
 
             try
             {
@@ -69,6 +75,8 @@ namespace PastirmaApi.Application.Services
                 // Log the error for debugging - email errors should not block registration
                 _logger.LogError(ex, "Failed to send verification email to {Email}. User can request resend later.", user.Email);
             }
+
+            _logger.LogWarning("=== REGISTER USER END ===");
         }
 
         public async Task VerifyEmailAsync(string token)
