@@ -41,7 +41,7 @@ namespace PastirmaApi.Infrastructure.Email
 
         public string GetHtmlBody(EmailTemplateType type, IDictionary<string, string> values)
         {
-            var path = Path.Combine(_env.ContentRootPath, "Infrastructure\\Email\\Templates", GetBodyFileName(type));
+            var path = Path.Combine(_env.ContentRootPath, "Infrastructure", "Email", "Templates", GetBodyFileName(type));
             try
             {
                 var template = File.ReadAllText(path);
