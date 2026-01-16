@@ -26,9 +26,22 @@ namespace PastirmaApi.Infrastructure.Email
 
         public async Task SendEmailAsync(string toEmail, EmailTemplateType templateType, IDictionary<string, string> values)
         {
+            var emailFrom = _config["Resend:EmailFrom"];
+
+            _logger.LogInformation("=== EMAIL SEND ATTEMPT ===");
+            _logger.LogInformation("To: {ToEmail}", toEmail);
+            _logger.LogInformation("From: {FromEmail}", emailFrom ?? "NOT CONFIGURED");
+            _logger.LogInformation("Template: {TemplateType}", templateType);
+
+            if (string.IsNullOrEmpty(emailFrom))
+            {
+                _logger.LogError("Resend:EmailFrom is not configured!");
+                throw new BusinessException("Email configuration is missing.");
+            }
+
             var message = new EmailMessage
             {
-                From = _config["Resend:EmailFrom"]!,
+                From = emailFrom,
                 To = toEmail,
                 Subject = _templateProvider.GetSubject(templateType),
                 HtmlBody = _templateProvider.GetHtmlBody(templateType, values)
@@ -36,11 +49,13 @@ namespace PastirmaApi.Infrastructure.Email
 
             try
             {
+                _logger.LogInformation("Calling Resend API...");
                 var result = await _resend.EmailSendAsync(message);
+                _logger.LogInformation("Email sent successfully! Result: {Result}", result?.Id ?? "No ID returned");
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Email gönderilemedi: {ErrorType}", ex.GetType().Name);
+                _logger.LogError(ex, "Email send failed: {ErrorType} - {Message}", ex.GetType().Name, ex.Message);
                 throw new BusinessException("Email gönderilemedi. Lütfen tekrar deneyin.");
             }
         }
