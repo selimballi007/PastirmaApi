@@ -29,4 +29,10 @@
     </None>
   </ItemGroup>
 
+  <ItemGroup>
+    <None Include="Infrastructure\Email\Templates\**\*.html">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
 </Project>
