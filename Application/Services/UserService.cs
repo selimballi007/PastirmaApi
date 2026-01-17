@@ -81,7 +81,12 @@ namespace PastirmaApi.Application.Services
 
         public async Task VerifyEmailAsync(string token)
         {
+            _logger.LogWarning("=== VERIFY EMAIL START ===");
+            _logger.LogWarning("Token received (first 50 chars): {Token}", token.Substring(0, Math.Min(50, token.Length)));
+
             var email = _jwtService.ValidateEmailVerificationToken(token);
+            _logger.LogWarning("Validation result - Email: {Email}", email ?? "NULL");
+
             if (string.IsNullOrEmpty(email))
                 throw new BusinessException("Geçersiz veya süresi dolmuş token.");
 
@@ -90,9 +95,13 @@ namespace PastirmaApi.Application.Services
                 throw new BusinessException("Kullanıcı bulunamadı");
 
             if (user.IsVerified)
+            {
+                _logger.LogWarning("User already verified: {Email}", email);
                 return; // zaten doğrulanmış
-                        // 
+            }
+
             await _repository.MarkAsVerifiedAsync(user.Id);
+            _logger.LogWarning("=== VERIFY EMAIL SUCCESS === User {UserId} verified", user.Id);
         }
 
         public async Task ResendVerificationByTokenAsync(string expiredToken)
