@@ -14,12 +14,12 @@ namespace PastirmaApi.API.Middlewares
         private readonly IConfiguration _configuration;
 
         // ✅ HashSet ile O(1) lookup
+        // Note: verify-email and reset-password are NOT protected because users click links from email
+        // The JWT token in the URL is the proof of legitimacy
         private static readonly HashSet<string> ProtectedPaths = new(StringComparer.OrdinalIgnoreCase)
     {
         "/api/user/login",
         "/api/user/register",
-        "/api/user/verify-email",
-        "/api/user/reset-password",
         "/api/user/forgot-password",
         "/api/user/resend-verification-byt",
         "/api/user/resend-verification-bye",
