@@ -66,8 +66,27 @@ namespace PastirmaApi.Infrastructure.Identity
 
         public string? ValidateEmailVerificationToken(string token)
         {
+            _logger.LogWarning("=== VALIDATE EMAIL TOKEN START ===");
+            _logger.LogWarning("Token length: {Length}", token?.Length ?? 0);
+            _logger.LogWarning("Config Issuer: {Issuer}", _config["Jwt:Issuer"] ?? "NOT SET");
+            _logger.LogWarning("Config Audience: {Audience}", _config["Jwt:Audience"] ?? "NOT SET");
+
             var tokenHandler = new JwtSecurityTokenHandler();
             var key = Encoding.UTF8.GetBytes(_config["Jwt:Key"]!);
+
+            // Try to read the token without validation first to see what's in it
+            try
+            {
+                var jwtToken = tokenHandler.ReadJwtToken(token);
+                _logger.LogWarning("Token Issuer: {Issuer}", jwtToken.Issuer);
+                _logger.LogWarning("Token Audience: {Audience}", string.Join(",", jwtToken.Audiences));
+                _logger.LogWarning("Token Expires: {Expires}", jwtToken.ValidTo);
+                _logger.LogWarning("Token Claims: {Claims}", string.Join(", ", jwtToken.Claims.Select(c => $"{c.Type}={c.Value}")));
+            }
+            catch (Exception readEx)
+            {
+                _logger.LogWarning("Could not read token: {Error}", readEx.Message);
+            }
 
             var validationParameters = new TokenValidationParameters
             {
@@ -85,11 +104,32 @@ namespace PastirmaApi.Infrastructure.Identity
             {
                 var principal = tokenHandler.ValidateToken(token, validationParameters, out _);
                 var email = principal.FindFirst(ClaimTypes.Email)?.Value;  // ClaimTypes.Email resolves to the full URI
+                _logger.LogWarning("Token validated successfully! Email: {Email}", email ?? "NOT FOUND");
                 return email;
+            }
+            catch (SecurityTokenInvalidIssuerException issuerEx)
+            {
+                _logger.LogWarning("Invalid Issuer: {Error}", issuerEx.Message);
+                return null;
+            }
+            catch (SecurityTokenInvalidAudienceException audienceEx)
+            {
+                _logger.LogWarning("Invalid Audience: {Error}", audienceEx.Message);
+                return null;
+            }
+            catch (SecurityTokenExpiredException expiredEx)
+            {
+                _logger.LogWarning("Token Expired: {Error}", expiredEx.Message);
+                return null;
+            }
+            catch (SecurityTokenInvalidSignatureException signatureEx)
+            {
+                _logger.LogWarning("Invalid Signature: {Error}", signatureEx.Message);
+                return null;
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Unexpected error while validating email verification token");
+                _logger.LogWarning(ex, "Unexpected error while validating email verification token: {Error}", ex.Message);
                 return null;
             }
         }
