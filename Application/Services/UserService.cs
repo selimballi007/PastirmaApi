@@ -32,7 +32,6 @@ namespace PastirmaApi.Application.Services
         }
 
         public async Task RegisterUserAsync(RegisterUserDTO dto) {
-            _logger.LogWarning("=== REGISTER USER START === Email: {Email}", dto.Email);
 
             if (await UserExistsAsync(dto.Email))
                 throw new BusinessException("Bu email zaten kayıtlı");
@@ -48,15 +47,12 @@ namespace PastirmaApi.Application.Services
             };
 
             await _repository.AddAsync(user);
-            _logger.LogWarning("User created in DB. ID: {UserId}", user.Id);
 
             // Create Email verification token
             var frontendUrl = _configuration["FrontendUrl"];
-            _logger.LogWarning("FrontendUrl config: {FrontendUrl}", frontendUrl ?? "NOT CONFIGURED");
 
             var token = _jwtService.GenerateEmailVerificationToken(user.Email);
             var verifyLink = $"{frontendUrl}/account/verify-email?token={token}";
-            _logger.LogWarning("Verify link: {VerifyLink}", verifyLink);
 
             try
             {
@@ -75,17 +71,11 @@ namespace PastirmaApi.Application.Services
                 // Log the error for debugging - email errors should not block registration
                 _logger.LogError(ex, "Failed to send verification email to {Email}. User can request resend later.", user.Email);
             }
-
-            _logger.LogWarning("=== REGISTER USER END ===");
         }
 
         public async Task VerifyEmailAsync(string token)
         {
-            _logger.LogWarning("=== VERIFY EMAIL START ===");
-            _logger.LogWarning("Token received (first 50 chars): {Token}", token.Substring(0, Math.Min(50, token.Length)));
-
             var email = _jwtService.ValidateEmailVerificationToken(token);
-            _logger.LogWarning("Validation result - Email: {Email}", email ?? "NULL");
 
             if (string.IsNullOrEmpty(email))
                 throw new BusinessException("Geçersiz veya süresi dolmuş token.");
@@ -96,12 +86,10 @@ namespace PastirmaApi.Application.Services
 
             if (user.IsVerified)
             {
-                _logger.LogWarning("User already verified: {Email}", email);
                 return; // zaten doğrulanmış
             }
 
             await _repository.MarkAsVerifiedAsync(user.Id);
-            _logger.LogWarning("=== VERIFY EMAIL SUCCESS === User {UserId} verified", user.Id);
         }
 
         public async Task ResendVerificationByTokenAsync(string expiredToken)
@@ -143,24 +131,18 @@ namespace PastirmaApi.Application.Services
 
         public async Task<LoginTransDTO> LoginUserAsync(LoginRequestDTO dto)
         {
-            var totalStopwatch = Stopwatch.StartNew();
-
             // ===== 1. TOKEN'LARI ÖNCE OLUŞTUR (DB'ye gitmeden) =====
-            var tokenStopwatch = Stopwatch.StartNew();
             var refreshToken = _jwtService.GenerateRefreshToken();
             var refreshTokenExpiry = DateTime.UtcNow.AddDays(
                 int.Parse(_configuration["Jwt:RefreshTokenExpiresDays"]!)
             );
-            tokenStopwatch.Stop();
 
             // ===== 2. TEK QUERY İLE USER GET + UPDATE =====
-            var dbStopwatch = Stopwatch.StartNew();
             var user = await _repository.GetAndUpdateLoginAsync(
                 dto.Email,
                 refreshToken,
                 refreshTokenExpiry
             );
-            dbStopwatch.Stop();
 
             // ===== 3. BUSINESS LOGIC (C#'ta) =====
             if (user == null)
@@ -183,7 +165,6 @@ namespace PastirmaApi.Application.Services
                 );
 
             // ===== 4. PASSWORD VERIFY =====
-            var verifyStopwatch = Stopwatch.StartNew();
             if (!BCrypt.Net.BCrypt.Verify(dto.PasswordHash, user.PasswordHash))
             {
                 // Increment failed login attempts
@@ -203,7 +184,6 @@ namespace PastirmaApi.Application.Services
                 await _repository.UpdateUserLockoutAsync(user.Id, newFailedAttempts, null);
                 throw new BusinessException($"Şifre yanlış. Kalan deneme hakkı: {5 - newFailedAttempts}");
             }
-            verifyStopwatch.Stop();
 
             // ===== 4.1. RESET LOCKOUT ON SUCCESSFUL LOGIN =====
             if (user.FailedLoginAttempts > 0 || user.LockoutEnd.HasValue)
@@ -212,21 +192,9 @@ namespace PastirmaApi.Application.Services
             }
 
             // ===== 5. ACCESS TOKEN OLUŞTUR =====
-            var accessTokenStopwatch = Stopwatch.StartNew();
             var accessToken = _jwtService.GenerateAccessToken(
                 new GenerateAccessTokenDTO(user.Id, user.Email,user.Username, user.Role.ToString())
             );
-            accessTokenStopwatch.Stop();
-
-            totalStopwatch.Stop();
-
-            // ===== 6. LOGGING =====
-            System.Diagnostics.Debug.WriteLine("=== HYBRID CTE LOGIN PERFORMANCE ===");
-            System.Diagnostics.Debug.WriteLine($"  - Generate Tokens: {tokenStopwatch.ElapsedMilliseconds}ms");
-            System.Diagnostics.Debug.WriteLine($"  - DB (GET + UPDATE): {dbStopwatch.ElapsedMilliseconds}ms");
-            System.Diagnostics.Debug.WriteLine($"  - Verify Password: {verifyStopwatch.ElapsedMilliseconds}ms");
-            System.Diagnostics.Debug.WriteLine($"  - Generate Access Token: {accessTokenStopwatch.ElapsedMilliseconds}ms");
-            System.Diagnostics.Debug.WriteLine($"  - TOTAL: {totalStopwatch.ElapsedMilliseconds}ms");
 
             return new LoginTransDTO(
                 user.Id,
@@ -280,8 +248,6 @@ namespace PastirmaApi.Application.Services
 
         public async Task<LoginTransDTO> RefreshAccessTokenAsync(string oldRefreshToken, string accessToken)
         {
-            var totalStopwatch = Stopwatch.StartNew();
-            var tokenReadStopwatch = Stopwatch.StartNew();
             var principal = _jwtService.GetPrincipalFromExpiredToken(accessToken);
             if (principal == null)
                 throw new BusinessException("Tekrar Giriş yapınız");
@@ -297,24 +263,13 @@ namespace PastirmaApi.Application.Services
             var userRole = principal.FindFirst(ClaimTypes.Role)?.Value;
             if (string.IsNullOrEmpty(userRole))
                 throw new BusinessException("Tekrar Giriş yapınız");
-            tokenReadStopwatch.Stop();
 
-            var tokenCreateStopwatch = Stopwatch.StartNew();
             var newAccessToken = _jwtService.GenerateAccessToken(new GenerateAccessTokenDTO(Convert.ToInt32(userId), userEmail, userName, userRole));
             var newRefreshToken = _jwtService.GenerateRefreshToken();            
             var newRefreshTokenExpiry = DateTime.UtcNow.AddDays(int.Parse(_configuration["Jwt:RefreshTokenExpiresDays"]!));
-            tokenCreateStopwatch.Stop();
 
-            var dbStopwatch = Stopwatch.StartNew();
             var result= await _repository.UpdateTokenAsync(new UpdateTokenDTO(Convert.ToInt32(userId), oldRefreshToken, newRefreshToken, newRefreshTokenExpiry));
-            dbStopwatch.Stop();
-            totalStopwatch.Stop();
-            // ===== 6. LOGGING =====
-            System.Diagnostics.Debug.WriteLine("=== REFRESH TOKEN PERFORMANCE ===");
-            System.Diagnostics.Debug.WriteLine($"  - Read AccessToken: {tokenReadStopwatch.ElapsedMilliseconds}ms");
-            System.Diagnostics.Debug.WriteLine($"  - Create Tokens: {tokenCreateStopwatch.ElapsedMilliseconds}ms");
-            System.Diagnostics.Debug.WriteLine($"  - DB (GET + UPDATE): {dbStopwatch.ElapsedMilliseconds}ms");
-            System.Diagnostics.Debug.WriteLine($"  - TOTAL: {totalStopwatch.ElapsedMilliseconds}ms");
+            
             return new LoginTransDTO(Convert.ToInt32(userId), userName, userEmail, userRole, newAccessToken, newRefreshToken, newRefreshTokenExpiry, result);
         }
 

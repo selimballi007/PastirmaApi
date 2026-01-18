@@ -32,8 +32,6 @@ namespace PastirmaApi.Application.Services
                 _context.BlogCategories.Add(category);
                 await _context.SaveChangesAsync();
 
-                _logger.LogInformation("Blog category created: {CategoryId}, Name: {Name}", category.Id, category.Name);
-
                 return MapToDto(category);
             }
             catch (Exception ex)
@@ -58,8 +56,6 @@ namespace PastirmaApi.Application.Services
                 category.DisplayOrder = dto.DisplayOrder;
 
                 await _context.SaveChangesAsync();
-
-                _logger.LogInformation("Blog category updated: {CategoryId}, Name: {Name}", id, dto.Name);
 
                 return MapToDto(category);
             }
@@ -89,8 +85,6 @@ namespace PastirmaApi.Application.Services
 
                 _context.BlogCategories.Remove(category);
                 await _context.SaveChangesAsync();
-
-                _logger.LogInformation("Blog category deleted: {CategoryId}, Name: {Name}", id, category.Name);
 
                 return true;
             }

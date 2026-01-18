@@ -41,8 +41,6 @@ namespace PastirmaApi.Application.Services
                 _context.BlogPosts.Add(post);
                 await _context.SaveChangesAsync();
 
-                _logger.LogInformation("Blog post created: {PostId}, Title: {Title}", post.Id, post.Title);
-
                 return await GetPostByIdAsync(post.Id);
             }
             catch (Exception ex)
@@ -75,8 +73,6 @@ namespace PastirmaApi.Application.Services
 
                 await _context.SaveChangesAsync();
 
-                _logger.LogInformation("Blog post updated: {PostId}, Title: {Title}", id, dto.Title);
-
                 return await GetPostByIdAsync(id);
             }
             catch (Exception ex)
@@ -98,8 +94,6 @@ namespace PastirmaApi.Application.Services
 
                 _context.BlogPosts.Remove(post);
                 await _context.SaveChangesAsync();
-
-                _logger.LogInformation("Blog post deleted: {PostId}, Title: {Title}", id, post.Title);
 
                 return true;
             }
@@ -188,8 +182,6 @@ namespace PastirmaApi.Application.Services
                 post.IsActive = !post.IsActive;
                 await _context.SaveChangesAsync();
 
-                _logger.LogInformation("Blog post status toggled: {PostId}, IsActive: {IsActive}", id, post.IsActive);
-
                 return post.IsActive;
             }
             catch (Exception ex)
@@ -211,8 +203,6 @@ namespace PastirmaApi.Application.Services
 
                 post.IsFeatured = !post.IsFeatured;
                 await _context.SaveChangesAsync();
-
-                _logger.LogInformation("Blog post featured status toggled: {PostId}, IsFeatured: {IsFeatured}", id, post.IsFeatured);
 
                 return post.IsFeatured;
             }

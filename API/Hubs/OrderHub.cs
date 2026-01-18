@@ -12,13 +12,10 @@ namespace PastirmaApi.API.Hubs
             // Get user role from claims
             var userRole = Context.User?.FindFirst(ClaimTypes.Role)?.Value;
 
-            Console.WriteLine($"Client connected: {Context.ConnectionId}, Role: {userRole ?? "Anonymous"}");
-
             // Add to Admin group if user is an Admin
             if (userRole == "Admin")
             {
                 await Groups.AddToGroupAsync(Context.ConnectionId, "Admin");
-                Console.WriteLine($"Admin user added to Admin group: {Context.ConnectionId}");
             }
 
             await base.OnConnectedAsync();
@@ -33,11 +30,9 @@ namespace PastirmaApi.API.Hubs
             if (userRole == "Admin")
             {
                 await Groups.RemoveFromGroupAsync(Context.ConnectionId, "Admin");
-                Console.WriteLine($"Admin user removed from Admin group: {Context.ConnectionId}");
             }
 
             await base.OnDisconnectedAsync(exception);
-            Console.WriteLine($"Client disconnected: {Context.ConnectionId}");
         }
     }
 }

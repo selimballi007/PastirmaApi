@@ -70,11 +70,9 @@ if (string.IsNullOrEmpty(connectionString))
 // Convert PostgreSQL URL to Entity Framework format if needed
 if (connectionString.StartsWith("postgresql://") || connectionString.StartsWith("postgres://"))
 {
-    Console.WriteLine("[INFO] Converting PostgreSQL URL to EF connection string format...");
     var uri = new Uri(connectionString.Replace("postgresql://", "postgres://"));
     var userInfo = uri.UserInfo.Split(':');
-    connectionString = $"Host={uri.Host};Port={uri.Port};Database={uri.AbsolutePath.TrimStart('/')};Username={userInfo[0]};Password={userInfo[1]};SSL Mode=Require;Trust Server Certificate=true";
-    Console.WriteLine($"[INFO] Converted connection string (password hidden): Host={uri.Host};Port={uri.Port};Database={uri.AbsolutePath.TrimStart('/')};Username={userInfo[0]};Password=***");
+    connectionString = $"Host={uri.Host};Port={uri.Port};Database={uri.AbsolutePath.TrimStart('/')};Username={userInfo[0]};Password={userInfo[1]};SSL Mode=Require;Trust Server Certificate=true";    
 }
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
@@ -203,9 +201,9 @@ using (var scope = app.Services.CreateScope())
     var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
     db.Database.Migrate(); // eksik migration varsa uygular
 
-    // Seed database with sample data
+    /* Seed database with sample data
     var seeder = new DatabaseSeeder(db);
-    await seeder.SeedAsync();
+    await seeder.SeedAsync();*/
 }
 // ------------------------------------
 

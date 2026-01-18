@@ -34,15 +34,11 @@ namespace PastirmaApi.API.Controllers
         [EnableRateLimiting("auth")]
         public async Task<IActionResult> Login([FromBody] LoginRequestDTO dto)
         {
-            var controllerStopWatch = Stopwatch.StartNew();
             var result = await _userService.LoginUserAsync(dto);
 
             // Set both access and refresh tokens as HttpOnly cookies
             AccessTokenCookieSettings(result.accessToken);
-            RefreshTokenCookieSettings(result.refreshTokenExpiry, result.refreshToken);
-
-            controllerStopWatch.Stop();
-            System.Diagnostics.Debug.WriteLine($"ControllerTime : {controllerStopWatch.ElapsedMilliseconds.ToString()}");
+            RefreshTokenCookieSettings(result.refreshTokenExpiry, result.refreshToken);           
 
             return Ok(new {
                 accessToken = result.accessToken, // Still return for backward compatibility
@@ -91,49 +87,33 @@ namespace PastirmaApi.API.Controllers
 
         [HttpPost("refresh-token")]
         public async Task<IActionResult> RefreshToken()
-        {
-            var controllerStopWatch = Stopwatch.StartNew();
-
-            // ✅ DEBUG: Log all incoming cookies
-            Console.WriteLine("=== REFRESH TOKEN REQUEST ===");
-            Console.WriteLine($"[RefreshToken] Request received at {DateTime.UtcNow}");
-            Console.WriteLine($"[RefreshToken] All cookies count: {Request.Cookies.Count}");
+        {            
             foreach (var cookie in Request.Cookies)
             {
                 var value = cookie.Value.Length > 50 ? cookie.Value.Substring(0, 50) + "..." : cookie.Value;
-                Console.WriteLine($"[RefreshToken] Cookie: {cookie.Key} = {value}");
             }
 
             // ✅ Read both tokens from cookies (cookie-based auth)
             var refreshToken = Request.Cookies["refreshToken"];
-            Console.WriteLine($"[RefreshToken] refreshToken from cookies: {(string.IsNullOrEmpty(refreshToken) ? "NULL/EMPTY" : "Found (" + refreshToken.Substring(0, Math.Min(20, refreshToken.Length)) + "...)")}");
 
             if (string.IsNullOrEmpty(refreshToken))
             {
-                Console.WriteLine("[RefreshToken] ERROR: refreshToken is null or empty!");
                 throw new BusinessException("Tekrar Giriş yapınız");
             }
 
             var accessToken = Request.Cookies["accessToken"];
-            Console.WriteLine($"[RefreshToken] accessToken from cookies: {(string.IsNullOrEmpty(accessToken) ? "NULL/EMPTY" : "Found (" + accessToken.Substring(0, Math.Min(20, accessToken.Length)) + "...)")}");
 
             if (string.IsNullOrEmpty(accessToken))
             {
-                Console.WriteLine("[RefreshToken] ERROR: accessToken is null or empty!");
                 throw new BusinessException("Tekrar Giriş yapınız");
             }
 
-            Console.WriteLine("[RefreshToken] Calling RefreshAccessTokenAsync...");
             var result = await _userService.RefreshAccessTokenAsync(refreshToken, accessToken);
-            Console.WriteLine($"[RefreshToken] Service call successful. User ID: {result.id}");
 
             // Set both access and refresh tokens as HttpOnly cookies
             AccessTokenCookieSettings(result.accessToken);
             RefreshTokenCookieSettings(result.refreshTokenExpiry, result.refreshToken);
-
-            controllerStopWatch.Stop();
-            Console.WriteLine($"[RefreshToken] SUCCESS - Total time: {controllerStopWatch.ElapsedMilliseconds}ms");
-            System.Diagnostics.Debug.WriteLine($"ControllerTime : {controllerStopWatch.ElapsedMilliseconds.ToString()}");
+            
             return Ok(new
             {
                 user = new LoginResponseDTO(result.id, result.userName, result.email, result.role, result.lastLoginAt)
@@ -266,8 +246,6 @@ namespace PastirmaApi.API.Controllers
 
         private void AccessTokenCookieSettings(string accessToken)
         {
-            System.Diagnostics.Debug.WriteLine($"[AccessTokenCookieSettings] Called");
-
             var env = HttpContext.RequestServices.GetRequiredService<IWebHostEnvironment>();
 
             // Read access token expiration from configuration (single source of truth)
@@ -297,15 +275,10 @@ namespace PastirmaApi.API.Controllers
             }
 
             Response.Cookies.Append("accessToken", accessToken, cookieOptions);
-
-            System.Diagnostics.Debug.WriteLine($"[AccessTokenCookieSettings] Cookie appended");
         }
 
         private void RefreshTokenCookieSettings(DateTime? refreshTokenExpiry, string refreshToken)
         {
-            System.Diagnostics.Debug.WriteLine($"[RefreshTokenCookieSettings] Called");
-            System.Diagnostics.Debug.WriteLine($"[RefreshTokenCookieSettings] Cookie value: {refreshToken.Substring(0, 20)}...");
-
             var env = HttpContext.RequestServices.GetRequiredService<IWebHostEnvironment>();
 
             // Put the refresh token in the cookie
@@ -332,10 +305,6 @@ namespace PastirmaApi.API.Controllers
             }
 
             Response.Cookies.Append("refreshToken", refreshToken, cookieOptions);
-
-            System.Diagnostics.Debug.WriteLine($"[RefreshTokenCookieSettings] Cookie appended");
-            System.Diagnostics.Debug.WriteLine($"[RefreshTokenCookieSettings] Response.Headers[\"Set-Cookie\"]: {Response.Headers["Set-Cookie"]}");
-
         }
 
     }
