@@ -52,16 +52,6 @@ namespace PastirmaApi.Infrastructure.GoogleCaptcha
                     cancellationToken: cts.Token
                 );
 
-                if (result?.Success == true)
-                {
-                    _logger.LogInformation("Turnstile verification successful");
-                }
-                else
-                {
-                    _logger.LogWarning("Turnstile verification failed: {ErrorCodes}",
-                        string.Join(", ", result?.ErrorCodes ?? new List<string>()));
-                }
-
                 return new CaptchaVerificationResultDTO
                 {
                     Success = result?.Success ?? false,

@@ -28,13 +28,7 @@ namespace PastirmaApi.API.Middlewares
                 {
                     // Add to Authorization header for JWT middleware to process
                     context.Request.Headers["Authorization"] = $"Bearer {token}";
-
-                    _logger.LogDebug("Added Authorization header from accessToken cookie");
                 }
-            }
-            else
-            {
-                _logger.LogDebug("Authorization header already present, skipping cookie check");
             }
 
             await _next(context);

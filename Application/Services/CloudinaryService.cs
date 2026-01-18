@@ -134,8 +134,6 @@ namespace PastirmaApi.Application.Services
 
                 var deleteResult = await _cloudinary.DestroyAsync(deleteParams);
 
-                _logger.LogInformation("Cloudinary delete result for {PublicId}: {Result}", publicId, deleteResult.Result);
-
                 if (deleteResult.Result == "ok")
                 {
                     resultDto.Success = true;
@@ -272,13 +270,6 @@ namespace PastirmaApi.Application.Services
                 }
 
                 await _context.SaveChangesAsync();
-
-                _logger.LogInformation(
-                    "Updated {MainCount} main images and {GalleryCount} gallery images from {OldUrl} to {NewUrl}",
-                    productsWithMainImage.Count,
-                    productImages.Count,
-                    oldUrl,
-                    newUrl);
 
                 return true;
             }

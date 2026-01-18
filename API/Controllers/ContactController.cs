@@ -81,12 +81,6 @@ namespace PastirmaApi.API.Controllers
                     );
                 }
 
-                _logger.LogInformation(
-                    "Contact form submitted from {Email} with subject: {Subject}",
-                    dto.Email,
-                    dto.Subject
-                );
-
                 return Ok(new { message = "Mesajınız başarıyla gönderildi. En kısa sürede size dönüş yapacağız." });
             }
             catch (Exception ex)
@@ -214,12 +208,6 @@ namespace PastirmaApi.API.Controllers
                     message.IsReplied = true;
                     message.RepliedAt = DateTime.UtcNow;
                     await _context.SaveChangesAsync();
-
-                    _logger.LogInformation(
-                        "Reply sent to {Email} for message {MessageId}",
-                        message.Email,
-                        id
-                    );
 
                     return Ok(new { message = "Yanıt başarıyla gönderildi." });
                 }

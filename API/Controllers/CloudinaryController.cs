@@ -64,7 +64,6 @@ namespace PastirmaApi.API.Controllers
 
             // Decode URL-encoded publicId (e.g., "products%2Fimage" -> "products/image")
             var decodedPublicId = Uri.UnescapeDataString(publicId);
-            _logger.LogInformation("Deleting image - Original: {Original}, Decoded: {Decoded}", publicId, decodedPublicId);
 
             var result = await _cloudinaryService.DeleteImageAsync(decodedPublicId, updateDatabase);
 

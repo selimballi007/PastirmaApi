@@ -45,9 +45,6 @@ namespace PastirmaApi.Application.Services
                 _context.Categories.Add(category);
                 await _context.SaveChangesAsync();
 
-                _logger.LogInformation("Category created: {CategoryId}, Name: {Name}",
-                    category.Id, category.Name);
-
                 return MapToDto(category);
             }
             catch (Exception ex)
@@ -82,8 +79,6 @@ namespace PastirmaApi.Application.Services
 
                 await _context.SaveChangesAsync();
 
-                _logger.LogInformation("Category updated: {CategoryId}, Name: {Name}", id, dto.Name);
-
                 return MapToDto(category);
             }
             catch (Exception ex)
@@ -116,9 +111,6 @@ namespace PastirmaApi.Application.Services
 
                 _context.Categories.Remove(category);
                 await _context.SaveChangesAsync();
-
-                _logger.LogInformation("Category deleted: {CategoryId}, Name: {Name}",
-                    id, category.Name);
 
                 return true;
             }
@@ -191,8 +183,6 @@ namespace PastirmaApi.Application.Services
 
                 await _context.SaveChangesAsync();
 
-                _logger.LogInformation("Categories reordered: {Count} categories", categories.Count);
-
                 return true;
             }
             catch (Exception ex)
@@ -216,9 +206,6 @@ namespace PastirmaApi.Application.Services
                 category.UpdatedDate = DateTime.UtcNow;
 
                 await _context.SaveChangesAsync();
-
-                _logger.LogInformation("Category status toggled: {CategoryId}, IsActive: {IsActive}",
-                    id, category.IsActive);
 
                 return category.IsActive;
             }

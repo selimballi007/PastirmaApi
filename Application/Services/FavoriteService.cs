@@ -50,9 +50,6 @@ namespace PastirmaApi.Application.Services
                 _context.Favorites.Add(favorite);
                 await _context.SaveChangesAsync();
 
-                _logger.LogInformation("Product added to favorites: UserId={UserId}, ProductId={ProductId}",
-                    userId, productId);
-
                 return true;
             }
             catch (Exception ex)
@@ -76,9 +73,6 @@ namespace PastirmaApi.Application.Services
 
                 _context.Favorites.Remove(favorite);
                 await _context.SaveChangesAsync();
-
-                _logger.LogInformation("Product removed from favorites: UserId={UserId}, ProductId={ProductId}",
-                    userId, productId);
 
                 return true;
             }

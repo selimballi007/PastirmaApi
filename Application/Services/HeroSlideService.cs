@@ -42,9 +42,6 @@ namespace PastirmaApi.Application.Services
                 _context.HeroSlides.Add(slide);
                 await _context.SaveChangesAsync();
 
-                _logger.LogInformation("Hero slide created: {SlideId}, Title: {Title}",
-                    slide.Id, slide.Title);
-
                 return MapToDto(slide);
             }
             catch (Exception ex)
@@ -74,8 +71,6 @@ namespace PastirmaApi.Application.Services
                 slide.BgColor = dto.BgColor;
 
                 await _context.SaveChangesAsync();
-
-                _logger.LogInformation("Hero slide updated: {SlideId}, Title: {Title}", id, dto.Title);
 
                 return MapToDto(slide);
             }
@@ -110,9 +105,6 @@ namespace PastirmaApi.Application.Services
                 }
 
                 await _context.SaveChangesAsync();
-
-                _logger.LogInformation("Hero slide deleted: {SlideId}, Title: {Title}. Remaining slides renumbered.",
-                    id, slide.Title);
 
                 return true;
             }
@@ -176,8 +168,6 @@ namespace PastirmaApi.Application.Services
 
                 await _context.SaveChangesAsync();
 
-                _logger.LogInformation("Hero slides reordered: {Count} slides", slides.Count);
-
                 return true;
             }
             catch (Exception ex)
@@ -200,9 +190,6 @@ namespace PastirmaApi.Application.Services
                 slide.IsActive = !slide.IsActive;
 
                 await _context.SaveChangesAsync();
-
-                _logger.LogInformation("Hero slide status toggled: {SlideId}, IsActive: {IsActive}",
-                    id, slide.IsActive);
 
                 return slide.IsActive;
             }

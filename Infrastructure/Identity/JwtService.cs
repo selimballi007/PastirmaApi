@@ -66,11 +66,6 @@ namespace PastirmaApi.Infrastructure.Identity
 
         public string? ValidateEmailVerificationToken(string token)
         {
-            _logger.LogWarning("=== VALIDATE EMAIL TOKEN START ===");
-            _logger.LogWarning("Token length: {Length}", token?.Length ?? 0);
-            _logger.LogWarning("Config Issuer: {Issuer}", _config["Jwt:Issuer"] ?? "NOT SET");
-            _logger.LogWarning("Config Audience: {Audience}", _config["Jwt:Audience"] ?? "NOT SET");
-
             var tokenHandler = new JwtSecurityTokenHandler();
             var key = Encoding.UTF8.GetBytes(_config["Jwt:Key"]!);
 
@@ -78,10 +73,6 @@ namespace PastirmaApi.Infrastructure.Identity
             try
             {
                 var jwtToken = tokenHandler.ReadJwtToken(token);
-                _logger.LogWarning("Token Issuer: {Issuer}", jwtToken.Issuer);
-                _logger.LogWarning("Token Audience: {Audience}", string.Join(",", jwtToken.Audiences));
-                _logger.LogWarning("Token Expires: {Expires}", jwtToken.ValidTo);
-                _logger.LogWarning("Token Claims: {Claims}", string.Join(", ", jwtToken.Claims.Select(c => $"{c.Type}={c.Value}")));
             }
             catch (Exception readEx)
             {
@@ -104,7 +95,6 @@ namespace PastirmaApi.Infrastructure.Identity
             {
                 var principal = tokenHandler.ValidateToken(token, validationParameters, out _);
                 var email = principal.FindFirst(ClaimTypes.Email)?.Value;  // ClaimTypes.Email resolves to the full URI
-                _logger.LogWarning("Token validated successfully! Email: {Email}", email ?? "NOT FOUND");
                 return email;
             }
             catch (SecurityTokenInvalidIssuerException issuerEx)

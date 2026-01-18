@@ -45,8 +45,6 @@ namespace PastirmaApi.Application.Services
                 _context.Addresses.Add(address);
                 await _context.SaveChangesAsync();
 
-                _logger.LogInformation("Address created for user {UserId}: {AddressId}", userId, address.Id);
-
                 return MapToDto(address);
             }
             catch (Exception ex)
@@ -85,8 +83,6 @@ namespace PastirmaApi.Application.Services
                 address.IsDefault = dto.IsDefault;
 
                 await _context.SaveChangesAsync();
-
-                _logger.LogInformation("Address updated for user {UserId}: {AddressId}", userId, addressId);
 
                 return MapToDto(address);
             }
@@ -132,8 +128,6 @@ namespace PastirmaApi.Application.Services
                         await _context.SaveChangesAsync();
                     }
                 }
-
-                _logger.LogInformation("Address deleted for user {UserId}: {AddressId}", userId, addressId);
 
                 return true;
             }
@@ -210,8 +204,6 @@ namespace PastirmaApi.Application.Services
                 // Set this address as default
                 address.IsDefault = true;
                 await _context.SaveChangesAsync();
-
-                _logger.LogInformation("Address set as default for user {UserId}: {AddressId}", userId, addressId);
 
                 return MapToDto(address);
             }
